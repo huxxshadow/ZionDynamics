@@ -1,10 +1,15 @@
 import asyncio
+import io
+import wave
 from asyncio import StreamReader, StreamWriter
 from Server import *
 
 import openai
 import socket
 import threading
+import struct
+import array
+
 # from gpt4all import GPT4All
 # import torch
 import os
@@ -20,6 +25,8 @@ mp3_path = os.path.join(code_path, "mp3.mp3")
 voiceInput = []
 dict_input = {"voiceInput": voiceInput, }
 voiceOutput = []
+STRING_SPECIFIER = "2222"
+WAV_SPECIFIER = "3333"
 exit = False
 
 gpt_role = "As a succulent named JOI, your role is to compassionately assist users in" \
@@ -52,18 +59,32 @@ def receiveMsg():
         totalData += data
         if len(data) < 1024:
             break
-    return str(totalData, encoding="utf8")
+    return totalData
 
 
-def sendMsg(msg):
+def getData():
+    specifier = str(receiveMsg(), encoding="utf-8")
+    if specifier == STRING_SPECIFIER:
+        print(str(receiveMsg(), encoding="utf-8"))
+    elif specifier == WAV_SPECIFIER:
+        data = receiveMsg()
+        ww = wave.open('received.wav', 'wb')
+        ww.writeframes(data)
+        ww.close()
+    return
+
+
+def sendString(msg):
+    sock.sendall(STRING_SPECIFIER)
     if len(msg) % 1024 == 0:
         msg = msg + " "
     sock.sendall(bytes(msg, encoding="utf-8"))
 
-def handleMsg(msg):
-#     todo:
 
-
+def sendWAV(songPath):
+    sock.sendall(WAV_SPECIFIER)
+    file = wave.open(songPath, 'rb')
+    sock.sendall(file)
 
 
 # async def task_read(reader: StreamReader):
@@ -112,15 +133,11 @@ async def echo(reader: StreamReader, writer: StreamWriter):
 
     writer.close()
 
+
 def keepReceiveMsg():
     while not exit:
-        msg = receiveMsg()
-        handleMsg(msg)
-
-def mainSendMsg():
-    # todo: xie
-
-
+        getData()
+    return
 
 
 
@@ -133,8 +150,5 @@ s.listen(5)
 sock, addr = s.accept()
 print(sock, addr)
 tRec = threading.Thread(target=keepReceiveMsg(), name="Receive_Msg")
-tSend = threading.Thread(target=mainSendMsg(), name="MainSendMsg")
 tRec.start()
-tSend.start()
 tRec.join()
-tSend.join()
