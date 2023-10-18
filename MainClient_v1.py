@@ -155,14 +155,14 @@ if __name__ == '__main__':
     tRec.join()
     # tSend.join()
 
-    recognizer, sample_rate, samples_per_read = soundInput_initial()
-
-    while True:
-        try:
-            recognizer = create_recognizer()
-            result = sound_echo(recognizer, sample_rate, samples_per_read)
-        except KeyboardInterrupt:
-            print("\nCaught Ctrl + C. Exiting")
-
-        send_msg = "voiceInput:" + result
-        asyncio.run(tcp_echo_client(send_msg))
+    # recognizer, sample_rate, samples_per_read = soundInput_initial()
+    #
+    # while True:
+    #     try:
+    #         recognizer = create_recognizer()
+    #         result = sound_echo(recognizer, sample_rate, samples_per_read)
+    #     except KeyboardInterrupt:
+    #         print("\nCaught Ctrl + C. Exiting")
+    #
+    #     send_msg = "voiceInput:" + result
+    #
