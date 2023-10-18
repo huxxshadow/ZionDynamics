@@ -15,12 +15,6 @@ mp3_path = os.path.join(code_path, "mp3.mp3")
 
 now: time.time()
 
-class Client:
-    def __init__(self):
-        s = socket.socket()
-        s.connect(('192.168.137.203', 9006))
-
-
 
 def TTS(response, start_time):
     tts = gTTS(text=response, lang='en')  # 英文 "en", 普通话 "zh-CN", 粤语 "zh-yue", 日语 "ja"
@@ -107,7 +101,56 @@ def sound_echo(recognizer, sample_rate, samples_per_read):
         return result
 
 
+def receiveMsg():
+    totalData = bytes()
+    while True:
+        data = sock.recv(1024)
+        totalData += data
+        if len(data) < 1024:
+            break
+    return totalData
+
+
+def getData():
+    specifier = str(receiveMsg(), encoding="utf-8")
+    if specifier == STRING_SPECIFIER:
+        print(str(receiveMsg(), encoding="utf-8"))
+        return str(receiveMsg(), encoding="utf-8")
+    elif specifier == WAV_SPECIFIER:
+        data = receiveMsg()
+        ww = wave.open('received.wav', 'wb')
+        ww.writeframes(data)
+        ww.close()
+    return
+
+
+def sendString(msg):
+    sock.sendall(STRING_SPECIFIER)
+    if len(msg) % 1024 == 0:
+        msg = msg + " "
+    sock.sendall(bytes(msg, encoding="utf-8"))
+
+
+def keepReceiveMsg():
+    while not exit:
+        msg = getData()
+        processedMsg = handleMsg(msg)
+        TTS(processedMsg)
+        # sendMsg(processedMsg)
+
+
 if __name__ == '__main__':
+    s = socket.socket()
+    s.connect(('192.168.137.203', 9006))
+
+    tRec = threading.Thread(target=keepReceiveMsg(), name="Receive_Msg")
+    # tSend = threading.Thread(target=mainSendMsg(), name="MainSendMsg")
+
+    tRec.start()
+    # tSend.start()
+    tRec.join()
+    # tSend.join()
+
     recognizer, sample_rate, samples_per_read = soundInput_initial()
 
     while True:
