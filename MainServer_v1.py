@@ -79,7 +79,7 @@ def getData():
     #     ww = wave.open('received.wav', 'wb')
     #     ww.writeframes(data)
     #     ww.close()
-    return
+
 
 
 def sendString(msg):
@@ -127,6 +127,7 @@ def keepReceiveMsg():
         msg = getData()
         processedMsg = handleMsg(msg)
         TTS(processedMsg)
+        sendWAV(mp3_path)
         # sendMsg(processedMsg)
 
 
@@ -141,6 +142,7 @@ s.bind((socket.gethostname, 9006))
 s.listen(5)
 # block, build session, sock_clint
 sock, addr = s.accept()
+
 print(sock, addr)
 
 tRec = threading.Thread(target=keepReceiveMsg(), name="Receive_Msg")
