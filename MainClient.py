@@ -11,14 +11,14 @@ import pygame
 code_path = os.path.dirname(os.path.abspath(__file__))
 mp3_path = os.path.join(code_path, "mp3.mp3")
 
-now: time.time()
 
 
-def TTS(response, start_time):
-    tts = gTTS(text=response, lang='en')  # 英文 "en", 普通话 "zh-CN", 粤语 "zh-yue", 日语 "ja"
-    if os.path.exists(mp3_path):
-        os.remove(mp3_path)
-    tts.save(mp3_path)
+
+# def TTS(response, start_time):
+#     tts = gTTS(text=response, lang='en')  # 英文 "en", 普通话 "zh-CN", 粤语 "zh-yue", 日语 "ja"
+#     if os.path.exists(mp3_path):
+#         os.remove(mp3_path)
+#     tts.save(mp3_path)
 
     # running_time2 = time.time() - start_time
     # print("TTS running time:", running_time2, "seconds")

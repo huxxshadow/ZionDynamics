@@ -12,6 +12,7 @@ import time
 import pygame
 from gtts import gTTS
 
+
 api_key = "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"
 openai.api_key = api_key
 code_path = os.path.dirname(os.path.abspath(__file__))
@@ -44,6 +45,11 @@ def askChatGPT(current_question, question_record, response_record):
     answer = completion.choices[0].message["content"].strip()
     return answer
 
+def TTS(response):
+    tts = gTTS(text=response, lang='en')  # 英文 "en", 普通话 "zh-CN", 粤语 "zh-yue", 日语 "ja"
+    if os.path.exists(mp3_path):
+        os.remove(mp3_path)
+    tts.save(mp3_path)
 
 def receiveMsg():
     totalData = bytes()
@@ -61,32 +67,12 @@ def sendMsg(msg):
     sock.sendall(bytes(msg, encoding="utf-8"))
 
 def handleMsg(msg):
-#     todo:
-
-
-
-
-# async def task_read(reader: StreamReader):
-#     data = await reader.read(200)
-#     message = data.decode()
-#     return message.splitlines()
-
-
-max_length_record_Voice = 5
-
-
-async def echo(reader: StreamReader, writer: StreamWriter):
-    # data = await reader.read(100)
-    # message = data.decode()
-    # addr = writer.get_extra_info('peername')
-    out = ""
-
-    input_list = await task_read(reader)
+    input_list = msg.splitlines()
     for input_line in input_list:
         input_ = input_line.split(":", 1)
         inputType = input_[0]
         input_content = input_[1]
-        dict_input[inputType].append(input_content)  # put the input into the dict for record
+        dict_input[inputType].append(input_content)
 
     if inputType == "voiceInput":
         if len(voiceInput) > 1:
@@ -99,26 +85,29 @@ async def echo(reader: StreamReader, writer: StreamWriter):
             voiceInput.pop(0)
         if len(voiceOutput) > max_length_record_Voice:
             voiceOutput.pop(0)
-        out = "voiceOutput:" + response
+            out = "voiceOutput:" + response #for temporary use
+    return out
 
-    writer.write(out.encode())
-    await writer.drain()
 
-    # print(f"Received {message!r} from {addr!r}")
-    # print(f"Send: {message!r}")
-    #
-    # writer.write(data * 2)
-    # await writer.drain()
 
-    writer.close()
+
+
+# async def task_read(reader: StreamReader):
+#     data = await reader.read(200)
+#     message = data.decode()
+#     return message.splitlines()
+
+
+max_length_record_Voice = 5
 
 def keepReceiveMsg():
     while not exit:
         msg = receiveMsg()
-        handleMsg(msg)
+        processedMsg=handleMsg(msg)
+        TTS(processedMsg)
+        # sendMsg(processedMsg)
 
-def mainSendMsg():
-    # todo: xie
+
 
 
 
@@ -132,9 +121,11 @@ s.listen(5)
 # block, build session, sock_clint
 sock, addr = s.accept()
 print(sock, addr)
+
 tRec = threading.Thread(target=keepReceiveMsg(), name="Receive_Msg")
-tSend = threading.Thread(target=mainSendMsg(), name="MainSendMsg")
+# tSend = threading.Thread(target=mainSendMsg(), name="MainSendMsg")
+
 tRec.start()
-tSend.start()
+# tSend.start()
 tRec.join()
-tSend.join()
+# tSend.join()
