@@ -16,6 +16,7 @@ import os
 import time
 import pygame
 from gtts import gTTS
+from pydub import AudioSegment
 
 api_key = "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"
 openai.api_key = api_key
@@ -25,6 +26,7 @@ mp3_path = os.path.join(code_path, "mp3.mp3")
 voiceInput = []
 dict_input = {"voiceInput": voiceInput, }
 voiceOutput = []
+
 STRING_SPECIFIER = "2222"
 WAV_SPECIFIER = "3333"
 exit = False
@@ -58,6 +60,9 @@ def TTS(response):
         os.remove(mp3_path)
     tts.save(mp3_path)
 
+def mp3_to_wav(mp3_path):
+    sound = AudioSegment.from_mp3(mp3_path)
+    sound.export("temp.wav", format="wav")
 
 def receiveMsg():
     totalData = bytes()
@@ -79,7 +84,7 @@ def getData():
     #     ww = wave.open('received.wav', 'wb')
     #     ww.writeframes(data)
     #     ww.close()
-    return
+
 
 
 def sendString(msg):
@@ -127,6 +132,7 @@ def keepReceiveMsg():
         msg = getData()
         processedMsg = handleMsg(msg)
         TTS(processedMsg)
+        sendWAV("temp.wav")
         # sendMsg(processedMsg)
 
 
@@ -141,6 +147,7 @@ s.bind((socket.gethostname, 9006))
 s.listen(5)
 # block, build session, sock_clint
 sock, addr = s.accept()
+
 print(sock, addr)
 
 tRec = threading.Thread(target=keepReceiveMsg(), name="Receive_Msg")
