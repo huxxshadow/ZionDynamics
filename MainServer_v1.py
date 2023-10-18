@@ -77,8 +77,9 @@ def receiveMsg():
 def getData():
     specifier = str(receiveMsg(), encoding="utf-8")
     if specifier == STRING_SPECIFIER:
-        print(str(receiveMsg(), encoding="utf-8"))
-        return str(receiveMsg(), encoding="utf-8")
+        receivedStr = str(receiveMsg(), encoding="utf-8")
+        print(receivedStr)
+        return receivedStr
     # elif specifier == WAV_SPECIFIER:
     #     data = receiveMsg()
     #     ww = wave.open('received.wav', 'wb')
