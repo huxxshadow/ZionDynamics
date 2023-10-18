@@ -1,6 +1,7 @@
 import asyncio
 import os
 import time
+import wave
 
 import sherpa_ncnn
 import sys
@@ -12,6 +13,9 @@ import threading
 
 code_path = os.path.dirname(os.path.abspath(__file__))
 mp3_path = os.path.join(code_path, "mp3.mp3")
+STRING_SPECIFIER = "2222"
+WAV_SPECIFIER = "3333"
+exit = False
 
 now: time.time()
 
@@ -134,14 +138,14 @@ def sendString(msg):
 def keepReceiveMsg():
     while not exit:
         msg = getData()
-        processedMsg = handleMsg(msg)
-        TTS(processedMsg)
+        # processedMsg = handleMsg(msg)
+        # TTS(processedMsg)
         # sendMsg(processedMsg)
 
 
 if __name__ == '__main__':
-    s = socket.socket()
-    s.connect(('192.168.137.203', 9006))
+    sock = socket.socket()
+    sock.connect(('192.168.137.203', 9006))
 
     tRec = threading.Thread(target=keepReceiveMsg(), name="Receive_Msg")
     # tSend = threading.Thread(target=mainSendMsg(), name="MainSendMsg")
