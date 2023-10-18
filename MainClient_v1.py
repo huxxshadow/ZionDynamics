@@ -142,7 +142,7 @@ def processMsg():
     temp=last_result[length_last:len(last_result)]
     length_last=len(last_result)
     event.set()
-    return temp
+    return "voiceInput:"+temp
 
 def sendString(msg):
     sock.sendall(STRING_SPECIFIER)

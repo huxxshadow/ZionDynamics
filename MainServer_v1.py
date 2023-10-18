@@ -76,9 +76,10 @@ def receiveMsg():
 
 def getData():
     specifier = str(receiveMsg(), encoding="utf-8")
+    print("this is the specifier: " + specifier)
     if specifier == STRING_SPECIFIER:
         receivedStr = str(receiveMsg(), encoding="utf-8")
-        print(receivedStr)
+        print("this is the receive msg: " + receivedStr)
         return receivedStr
     # elif specifier == WAV_SPECIFIER:
     #     data = receiveMsg()
@@ -89,16 +90,16 @@ def getData():
 
 
 def sendString(msg):
-    sock.sendall(STRING_SPECIFIER)
+    sock.sendall(bytes(STRING_SPECIFIER,encoding="utf-8"))
     if len(msg) % 1024 == 0:
         msg = msg + " "
     sock.sendall(bytes(msg, encoding="utf-8"))
 
 
 def sendWAV(songPath):
-    sock.sendall(WAV_SPECIFIER)
+    sock.sendall(bytes(WAV_SPECIFIER, encoding="utf-8"))
     file = wave.open(songPath, 'rb')
-    sock.sendall(file)
+    sock.sendall(file.readframes(file.getnframes()))
 
 
 def handleMsg(msg):
@@ -121,7 +122,7 @@ def handleMsg(msg):
             voiceInput.pop(0)
         if len(voiceOutput) > max_length_record_Voice:
             voiceOutput.pop(0)
-            out = "voiceOutput:" + response  # for temporary use
+        out = "voiceOutput:" + response  # for temporary use
     return out
 
 
@@ -133,6 +134,7 @@ def keepReceiveMsg():
         msg = getData()
         processedMsg = handleMsg(msg)
         TTS(processedMsg)
+        mp3_to_wav(mp3_path)
         sendWAV("temp.wav")
         # sendMsg(processedMsg)
 
@@ -143,7 +145,7 @@ def keepReceiveMsg():
 
 # build connection
 s = socket.socket()
-s.bind((socket.gethostname, 9006))
+s.bind(("172.28.171.195", 9006))
 # n+1
 s.listen(5)
 # block, build session, sock_clint
