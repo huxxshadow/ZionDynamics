@@ -1,10 +1,15 @@
 import asyncio
+import io
+import wave
 from asyncio import StreamReader, StreamWriter
 from Server import *
 
 import openai
 import socket
 import threading
+import struct
+import array
+
 # from gpt4all import GPT4All
 # import torch
 import os
@@ -21,6 +26,8 @@ mp3_path = os.path.join(code_path, "mp3.mp3")
 voiceInput = []
 dict_input = {"voiceInput": voiceInput, }
 voiceOutput = []
+STRING_SPECIFIER = "2222"
+WAV_SPECIFIER = "3333"
 exit = False
 
 gpt_role = "As a succulent named JOI, your role is to compassionately assist users in" \
@@ -58,22 +65,43 @@ def receiveMsg():
         totalData += data
         if len(data) < 1024:
             break
-    return str(totalData, encoding="utf8")
+    return totalData
 
 
-def sendMsg(msg):
+def getData():
+    specifier = str(receiveMsg(), encoding="utf-8")
+    if specifier == STRING_SPECIFIER:
+        print(str(receiveMsg(), encoding="utf-8"))
+    elif specifier == WAV_SPECIFIER:
+        data = receiveMsg()
+        ww = wave.open('received.wav', 'wb')
+        ww.writeframes(data)
+        ww.close()
+    return
+
+
+def sendString(msg):
+    sock.sendall(STRING_SPECIFIER)
     if len(msg) % 1024 == 0:
         msg = msg + " "
     sock.sendall(bytes(msg, encoding="utf-8"))
+def sendWAV(songPath):
+    sock.sendall(WAV_SPECIFIER)
+    file = wave.open(songPath, 'rb')
+    sock.sendall(file)
+
+
 
 def handleMsg(msg):
     input_list = msg.splitlines()
+
+
     for input_line in input_list:
         input_ = input_line.split(":", 1)
         inputType = input_[0]
         input_content = input_[1]
         dict_input[inputType].append(input_content)
-
+    
     if inputType == "voiceInput":
         if len(voiceInput) > 1:
             response = askChatGPT(dict_input["voiceInput"][-1], dict_input["voiceInput"][0:-1], voiceOutput)
@@ -88,17 +116,10 @@ def handleMsg(msg):
             out = "voiceOutput:" + response #for temporary use
     return out
 
-
-
-
-
-# async def task_read(reader: StreamReader):
-#     data = await reader.read(200)
-#     message = data.decode()
-#     return message.splitlines()
-
-
 max_length_record_Voice = 5
+
+
+
 
 def keepReceiveMsg():
     while not exit:
@@ -107,7 +128,8 @@ def keepReceiveMsg():
         TTS(processedMsg)
         # sendMsg(processedMsg)
 
-
+# def mainSendMsg():
+#     
 
 
 
