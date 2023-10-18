@@ -18,6 +18,7 @@ STRING_SPECIFIER = "2222"
 WAV_SPECIFIER = "3333"
 exit = False
 
+now: time.time()
 
 
 
