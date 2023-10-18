@@ -3,6 +3,8 @@ from asyncio import StreamReader, StreamWriter
 from Server import *
 
 import openai
+import socket
+import threading
 # from gpt4all import GPT4All
 # import torch
 import os
@@ -18,33 +20,7 @@ mp3_path = os.path.join(code_path, "mp3.mp3")
 voiceInput = []
 dict_input = {"voiceInput": voiceInput, }
 voiceOutput = []
-
-# def TTS(response, start_time):
-#     tts = gTTS(text=response, lang='en')  # 英文 "en", 普通话 "zh-CN", 粤语 "zh-yue", 日语 "ja"
-#     if os.path.exists(mp3_path):
-#         os.remove(mp3_path)
-#     tts.save(mp3_path)
-#
-#     running_time2 = time.time() - start_time
-#     print("TTS running time:", running_time2, "seconds")
-
-
-# async def play_mp3(file_path, start_time):
-#     pygame.init()
-#     pygame.mixer.init()
-#     pygame.mixer.music.load(file_path)
-#     pygame.mixer.music.play()
-#     running_time2 = time.time() - start_time
-#     print("play_mp3 running time:", running_time2, "seconds")
-#     while pygame.mixer.music.get_busy():
-#         await asyncio.sleep(0.1)
-#         continue
-#
-#     pygame.mixer.music.stop()
-#     pygame.mixer.quit()
-#     pygame.quit()
-#     return running_time2
-
+exit = False
 
 gpt_role = "As a succulent named JOI, your role is to compassionately assist users in" \
            " expressing and addressing their psychological concerns" \
@@ -69,10 +45,31 @@ def askChatGPT(current_question, question_record, response_record):
     return answer
 
 
-async def task_read(reader: StreamReader):
-    data = await reader.read(200)
-    message = data.decode()
-    return message.splitlines()
+def receiveMsg():
+    totalData = bytes()
+    while True:
+        data = sock.recv(1024)
+        totalData += data
+        if len(data) < 1024:
+            break
+    return str(totalData, encoding="utf8")
+
+
+def sendMsg(msg):
+    if len(msg) % 1024 == 0:
+        msg = msg + " "
+    sock.sendall(bytes(msg, encoding="utf-8"))
+
+def handleMsg(msg):
+#     todo:
+
+
+
+
+# async def task_read(reader: StreamReader):
+#     data = await reader.read(200)
+#     message = data.decode()
+#     return message.splitlines()
 
 
 max_length_record_Voice = 5
@@ -115,13 +112,29 @@ async def echo(reader: StreamReader, writer: StreamWriter):
 
     writer.close()
 
+def keepReceiveMsg():
+    while not exit:
+        msg = receiveMsg()
+        handleMsg(msg)
 
-async def main(host, port):
-    server = await asyncio.start_server(echo, host, port)
-    addr = server.sockets[0].getsockname()
-    print(f'Serving on {addr}')
-    async with server:
-        await server.serve_forever()
+def mainSendMsg():
+    # todo: xie
 
 
-asyncio.run(main("192.168.137.1", 9006))
+
+
+
+# build connection
+s = socket.socket()
+s.bind((socket.gethostname, 9006))
+# n+1
+s.listen(5)
+# block, build session, sock_clint
+sock, addr = s.accept()
+print(sock, addr)
+tRec = threading.Thread(target=keepReceiveMsg(), name="Receive_Msg")
+tSend = threading.Thread(target=mainSendMsg(), name="MainSendMsg")
+tRec.start()
+tSend.start()
+tRec.join()
+tSend.join()

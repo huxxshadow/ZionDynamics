@@ -12,14 +12,17 @@ code_path = os.path.dirname(os.path.abspath(__file__))
 mp3_path = os.path.join(code_path, "mp3.mp3")
 
 now: time.time()
-def TTS(response,start_time):
-    tts = gTTS(text=response, lang='en') #英文 "en", 普通话 "zh-CN", 粤语 "zh-yue", 日语 "ja"
+
+
+def TTS(response, start_time):
+    tts = gTTS(text=response, lang='en')  # 英文 "en", 普通话 "zh-CN", 粤语 "zh-yue", 日语 "ja"
     if os.path.exists(mp3_path):
         os.remove(mp3_path)
     tts.save(mp3_path)
 
     # running_time2 = time.time() - start_time
     # print("TTS running time:", running_time2, "seconds")
+
 
 def play_mp3(file_path):
     pygame.init()
@@ -34,7 +37,6 @@ def play_mp3(file_path):
     pygame.mixer.music.stop()
     pygame.mixer.quit()
     pygame.quit()
-
 
 
 def create_recognizer():
@@ -54,8 +56,6 @@ def create_recognizer():
     return recognizer
 
 
-
-
 async def tcp_echo_client(message):
     reader, writer = await asyncio.open_connection("192.168.137.1", 9006)
     print(f'Send to server: {message!r}')
@@ -63,16 +63,15 @@ async def tcp_echo_client(message):
     writer.write(message.encode())
     await writer.drain()
 
-
-
     data = await reader.read(200)
     output = data.decode()
 
     print(f'Received from server: {output!r}')
-    TTS(output.split(":",1)[1],0)
+    TTS(output.split(":", 1)[1], 0)
     play_mp3(mp3_path)
     writer.close()
     await writer.wait_closed()
+
 
 def soundInput_initial():
     devices = sd.query_devices()
@@ -85,6 +84,7 @@ def soundInput_initial():
     global last_result
     last_result = ""
     return recognizer, sample_rate, samples_per_read
+
 
 def sound_echo(recognizer, sample_rate, samples_per_read):
     global last_result
@@ -99,19 +99,15 @@ def sound_echo(recognizer, sample_rate, samples_per_read):
         return result
 
 
-
-
-
-
 if __name__ == '__main__':
-    recognizer, sample_rate, samples_per_read= soundInput_initial()
+    recognizer, sample_rate, samples_per_read = soundInput_initial()
 
     while True:
         try:
             recognizer = create_recognizer()
-            result= sound_echo(recognizer, sample_rate, samples_per_read)
+            result = sound_echo(recognizer, sample_rate, samples_per_read)
         except KeyboardInterrupt:
             print("\nCaught Ctrl + C. Exiting")
 
-        send_msg = "voiceInput:"+result
+        send_msg = "voiceInput:" + result
         asyncio.run(tcp_echo_client(send_msg))
