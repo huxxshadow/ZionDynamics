@@ -126,10 +126,19 @@ def getData():
         return receivedStr
 
     elif specifier == WAV_SPECIFIER:
-        data = receiveMsg()
+        # array with parameters
+
         ww = wave.open('received.wav', 'wb')
-        ww.writeframes(data)
+        ww.setnchannels(1)
+        ww.setsampwidth(2)
+        temp = str(receiveMsg().decode('utf-8'))
+        ww.setframerate(int(temp))
+        ww.setnframes(int(str(receiveMsg().decode('utf-8'))))
+        songs = receiveMsg()
+        ww.writeframes(songs)
         ww.close()
+
+
 def play_wav(file_path):
     data,fs=sf.read(file_path)
     sd.play(data,fs)
