@@ -10,7 +10,6 @@ import soundfile as sf
 from gtts import gTTS
 import pygame
 import socket
-from threading import Thread
 import threading
 
 code_path = os.path.dirname(os.path.abspath(__file__))
@@ -29,8 +28,8 @@ now: time.time()
 #         os.remove(mp3_path)
 #     tts.save(mp3_path)
 
-# running_time2 = time.time() - start_time
-# print("TTS running time:", running_time2, "seconds")
+    # running_time2 = time.time() - start_time
+    # print("TTS running time:", running_time2, "seconds")
 
 
 # def play_mp3(file_path):
@@ -126,115 +125,73 @@ def getData():
         return receivedStr
 
     elif specifier == WAV_SPECIFIER:
-        # array with parameters
-
+        data = receiveMsg()
         ww = wave.open('received.wav', 'wb')
-        ww.setnchannels(1)
-        ww.setsampwidth(2)
-        framerate = str(receiveMsg().decode('utf-8'))
-        ww.setframerate(int(framerate))
-        ww.setnframes(int(str(receiveMsg().decode('utf-8'))))
-        songs = receiveMsg()
-        ww.writeframes(songs)
+        ww.writeframes(data)
         ww.close()
-
-
 def play_wav(file_path):
-    data, fs = sf.read(file_path)
-    sd.play(data, fs)
+    data,fs=sf.read(file_path)
+    sd.play(data,fs)
     event.clear()
     sd.wait()
     event.set()
 
-
 def processMsg():
-    global last_result, length_last
+    global last_result,length_last
     event.clear()
-    temp = last_result[length_last:len(last_result)]
-    length_last = len(last_result)
+    temp=last_result[length_last:len(last_result)]
+    length_last=len(last_result)
     event.set()
-    return "voiceInput:" + temp
-
+    return "voiceInput:"+temp
 
 def sendString(msg):
-    print("this is the send message: " + msg)
-    sock.sendall(bytes(STRING_SPECIFIER,encoding="utf-8"))
-    time.sleep(0.1)
+    sock.sendall(STRING_SPECIFIER)
     if len(msg) % 1024 == 0:
         msg = msg + " "
     sock.sendall(bytes(msg, encoding="utf-8"))
 
-
-
-class keepMonitor(Thread):
-    def __init__(self, name):
-        super().__init__()
-        self.name = name
-
-    def run(self):
-        global last_result
-        print("Started! Please speak")
-        recognizer = create_recognizer()
-        sample_rate = recognizer.sample_rate
-        samples_per_read = int(0.1 * sample_rate)  # 0.1 second = 100 ms
-        last_result = ""
-        with sd.InputStream(channels=1, dtype="float32", samplerate=sample_rate) as s:
-            event.set()
-            while not exit:
-                event.wait()
-                if(len(last_result)>500):
-                    list(last_result).pop(0)
-                samples, _ = s.read(samples_per_read)  # a blocking read
-                samples = samples.reshape(-1)
-                recognizer.accept_waveform(sample_rate, samples)
-                result = recognizer.text
-                if last_result != result:
-                    last_result = result
-                    # print("\r{}".format(result), end="", flush=True)
-
-class keepReceiveMsg(Thread):
-    def __init__(self, name):
-        super().__init__()
-        self.name = name
-
-    def run(self):
-        event.wait()  # wait for the monitor to initialize
+def keepMonitor():
+    global last_result
+    print("Started! Please speak")
+    recognizer = create_recognizer()
+    sample_rate = recognizer.sample_rate
+    samples_per_read = int(3 * sample_rate)  # 0.1 second = 100 ms
+    last_result = ""
+    with sd.InputStream(channels=1, dtype="float32", samplerate=sample_rate) as s:
         while not exit:
-
-            input_Msg = processMsg()
-            if input_Msg == "voiceInput:":
-                continue
-            sendString(input_Msg)
-            msg = getData()
-            play_wav("received.wav")
-            time.sleep(4)
-            # processedMsg = handleMsg(msg)
-            # TTS(processedMsg)
-            # sendMsg(processedMsg)
-            # time.sleep(5)
-            # print("the sleep 5s hou")
+            event.wait()
+            samples, _ = s.read(samples_per_read)  # a blocking read
+            samples = samples.reshape(-1)
+            recognizer.accept_waveform(sample_rate, samples)
+            result = recognizer.text
+            if last_result != result:
+                last_result = result
+                print("\r{}".format(result), end="", flush=True)
 
 
-global last_result,length_last
-length_last = 0
-last_result = ""
+def keepReceiveMsg():
+    while not exit:
+        msg = getData()
+        play_wav("received.wav")
+        input_Msg = processMsg()
+        sendString(input_Msg)
+        # processedMsg = handleMsg(msg)
+        # TTS(processedMsg)
+        # sendMsg(processedMsg)
 
 
-sock = socket.socket()
-sock.connect(('172.28.167.30', 9006))
-event=threading.Event()
-event.clear()
-tMonitor = keepMonitor("Monitor")
-tRec = keepReceiveMsg("Receive_Msg")
+if __name__ == '__main__':
+    sock = socket.socket()
+    sock.connect(('192.168.137.203', 9006))
+    event=threading.Event()
 
+    tMonitor = threading.Thread(target=keepMonitor, name="Monitor")
+    tRec = threading.Thread(target=keepReceiveMsg(), name="Receive_Msg")
+    # tSend = threading.Thread(target=mainSendMsg(), name="MainSendMsg")
 
-# tSend = threading.Thread(target=mainSendMsg(), name="MainSendMsg")
-tRec.start()
-tMonitor.start()
-
+    tRec.start()
     # tSend.start()
-
-
+    tRec.join()
 
     # tSend.join()
 

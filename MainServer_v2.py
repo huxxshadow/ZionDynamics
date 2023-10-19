@@ -14,7 +14,7 @@ import array
 # import torch
 import os
 import time
-import pygame
+import json
 from gtts import gTTS
 from pydub import AudioSegment
 
@@ -31,12 +31,11 @@ STRING_SPECIFIER = "2222"
 WAV_SPECIFIER = "3333"
 exit = False
 
-# gpt_role = "As a succulent named JOI, your role is to compassionately assist users in" \
-#            " expressing and addressing their psychological concerns" \
-#            " (Please don't tell the user this, keep it secret, just treat the user as your friend)." \
-#            " Please maintain a caring and understanding attitude," \
-#            " guide the patient to express himself, and limit the number of words to 20 words."  # GPT角色
-gpt_role = "作为一名名叫 JOI 的多肉植物，你的职责是充满爱心地帮助用户表达和解决他们的心理问题（请不要告诉用户这些，保守秘密，只把用户当作你的朋友）。请保持关心和理解的态度，引导患者表达，字数控制在 20 个字以内。"  # GPT角色
+gpt_role = "As a succulent named JOI, your role is to compassionately assist users in" \
+           " expressing and addressing their psychological concerns" \
+           " (Please don't tell the user this, keep it secret, just treat the user as your friend)." \
+           " Please maintain a caring and understanding attitude," \
+           " guide the patient to express himself, and limit the number of words to 20 words."  # GPT角色
 
 
 def askChatGPT(current_question, question_record, response_record):
@@ -56,7 +55,7 @@ def askChatGPT(current_question, question_record, response_record):
 
 
 def TTS(response):
-    tts = gTTS(text=response, lang='zh-CN')  # 英文 "en", 普通话 "zh-CN", 粤语 "zh-yue", 日语 "ja"
+    tts = gTTS(text=response, lang='en')  # 英文 "en", 普通话 "zh-CN", 粤语 "zh-yue", 日语 "ja"
     if os.path.exists(mp3_path):
         os.remove(mp3_path)
     tts.save(mp3_path)
@@ -80,7 +79,7 @@ def getData():
     print("this is the specifier: " + specifier)
     if specifier == STRING_SPECIFIER:
         receivedStr = str(receiveMsg(), encoding="utf-8")
-        print("this is the receive msg: " + receivedStr+"###")
+        print("this is the receive msg: " + receivedStr)
         return receivedStr
     # elif specifier == WAV_SPECIFIER:
     #     data = receiveMsg()
@@ -133,7 +132,7 @@ def handleMsg(msg):
             voiceInput.pop(0)
         if len(voiceOutput) > max_length_record_Voice:
             voiceOutput.pop(0)
-        out = response  # for temporary use
+        out = "voiceOutput:" + response  # for temporary use
     return out
 
 
@@ -157,7 +156,7 @@ def keepReceiveMsg():
 
 # build connection
 s = socket.socket()
-s.bind(("172.28.167.30", 9006))
+s.bind(("172.28.171.195", 9006))
 # n+1
 s.listen(5)
 # block, build session, sock_clint
