@@ -19,7 +19,6 @@ STRING_SPECIFIER = "2222"
 WAV_SPECIFIER = "3333"
 exit = False
 
-now: time.time()
 
 
 
@@ -137,7 +136,7 @@ def getData():
         songs = receiveMsg()
         ww.writeframes(songs)
         ww.close()
-
+        print("received wav file")
 
 def play_wav(file_path):
     data, fs = sf.read(file_path)
@@ -150,6 +149,11 @@ def play_wav(file_path):
 def processMsg():
     global last_result, length_last
     event.clear()
+    if len(last_result)-length_last<5:
+        event.set()
+        return "voiceInput:"
+
+
     temp = last_result[length_last:len(last_result)]
     length_last = len(last_result)
     event.set()
