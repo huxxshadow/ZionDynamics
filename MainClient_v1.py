@@ -215,6 +215,7 @@ class keepReceiveMsg(Thread):
             if input_Msg == "voiceInput:":
                 continue
             sendString(input_Msg)
+            time.sleep(0.05)
             msg = getData()
             play_wav("received.wav")
             time.sleep(4)
@@ -229,9 +230,11 @@ global last_result,length_last
 length_last = 0
 last_result = ""
 
+# print(sd.query_devices())
+# sd.default.device[1] = 4
 
 sock = socket.socket()
-sock.connect(('172.28.162.150', 9006))
+sock.connect(('172.28.162.150', 9007))
 event=threading.Event()
 event.clear()
 tMonitor = keepMonitor("Monitor")
