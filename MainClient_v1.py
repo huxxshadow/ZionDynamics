@@ -130,9 +130,11 @@ def getData():
         ww = wave.open('received.wav', 'wb')
         ww.setnchannels(1)
         ww.setsampwidth(2)
-        framerate = str(receiveMsg().decode('utf-8'))
+        songData = str(receiveMsg().decode('utf-8'))
+        songData = songData.split()
+        framerate = songData[0]
         ww.setframerate(int(framerate))
-        ww.setnframes(int(str(receiveMsg().decode('utf-8'))))
+        ww.setnframes(int(songData[1]))
         songs = receiveMsg()
         ww.writeframes(songs)
         ww.close()
