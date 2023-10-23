@@ -127,18 +127,22 @@ def getData():
     elif specifier == WAV_SPECIFIER:
         # array with parameters
 
-        ww = wave.open('received.wav', 'wb')
-        ww.setnchannels(1)
-        ww.setsampwidth(2)
-        songData = str(receiveMsg().decode('utf-8'))
-        songData = songData.split()
-        framerate = songData[0]
-        ww.setframerate(int(framerate))
-        ww.setnframes(int(songData[1]))
-        songs = receiveMsg()
-        ww.writeframes(songs)
-        ww.close()
-        print("received wav file")
+        # ww = wave.open('received.wav', 'wb')
+        # ww.setnchannels(1)
+        # ww.setsampwidth(2)
+        # songData = str(receiveMsg().decode('utf-8'))
+        # songData = songData.split()
+        # framerate = songData[0]
+        # ww.setframerate(int(framerate))
+        # ww.setnframes(int(songData[1]))
+        # songs = receiveMsg()
+        # ww.writeframes(songs)
+        # ww.close()
+        # print("received wav file")
+        with open('received.wav', 'wb') as file:
+            data = receiveMsg()
+            file.write(data)
+
 
 def play_wav(file_path):
     data, fs = sf.read(file_path)
