@@ -225,7 +225,7 @@ last_result = ""
 
 
 sock = socket.socket()
-sock.connect(('172.28.167.30', 9006))
+sock.connect(('172.28.162.150', 9006))
 event=threading.Event()
 event.clear()
 tMonitor = keepMonitor("Monitor")
