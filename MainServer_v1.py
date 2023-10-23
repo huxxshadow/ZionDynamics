@@ -100,14 +100,18 @@ def sendString(msg):
 def sendWAV(songPath):
     sock.sendall(bytes(WAV_SPECIFIER, encoding="utf-8"))
     print("sending wav file")
-    file = wave.open(songPath, 'rb')
-    songData = str(file.getframerate()) + " " + str(file.getnframes())
-    sock.sendall(songData.encode("utf-8"))
+    # file = wave.open(songPath, 'rb')
+    with open(songPath,"rb") as file:
+        data=file.read()
+        sock.sendall(data)
+
+    # songData = str(file.getframerate()) + " " + str(file.getnframes())
+    # sock.sendall(songData.encode("utf-8"))
     # sock.sendall(str(file.getframerate()).encode("utf-8"))
     # time.sleep(1)
     # sock.sendall(str(file.getnframes()).encode("utf-8"))
-    time.sleep(1)
-    sock.sendall(file.readframes(file.getnframes()))
+    # time.sleep(1)
+    # sock.sendall(file.readframes(file.getnframes()))
     # time.sleep(1)
     # sock.sendall(bytes(str(file.getnchannels()), encoding="utf-8"))
     # sock.sendall(bytes(str(file.getsampwidth()), encoding="utf-8"))
@@ -159,7 +163,7 @@ def keepReceiveMsg():
 
 # build connection
 s = socket.socket()
-s.bind(("172.28.162.150", 9006))
+s.bind(("172.28.162.150", 9007))
 # n+1
 s.listen(5)
 # block, build session, sock_clint
