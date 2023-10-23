@@ -142,14 +142,14 @@ def receiveWAV(path):
 
 def getData():
     print("********************************************************")
-    specifier = str(receiveMsg(), encoding="utf-8")
-    print("receive the specifier: " + specifier)
-    if specifier == STRING_SPECIFIER:
-        receivedStr = str(receiveMsg(), encoding="utf-8")
-        print(receivedStr)
-        return receivedStr
+    # specifier = str(receiveMsg(), encoding="utf-8")
+    # print("receive the specifier: " + specifier)
+    # if specifier == STRING_SPECIFIER:
+    #     receivedStr = str(receiveMsg(), encoding="utf-8")
+    #     print(receivedStr)
+    #     return receivedStr
 
-    elif specifier == WAV_SPECIFIER:
+    # if specifier == WAV_SPECIFIER:
         # array with parameters
         # ww = wave.open('received.wav', 'wb')
         # ww.setnchannels(1)
@@ -177,7 +177,7 @@ def getData():
         # print(str(len(re1)))
         # data = pickle.loads(re1)
         # soundfile.write('received.wav', data,  samplerate=rate)
-        receiveWAV('received.wav')
+    receiveWAV('received.wav')
 
 
 
