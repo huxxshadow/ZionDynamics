@@ -2,8 +2,13 @@ import asyncio
 import io
 import wave
 from asyncio import StreamReader, StreamWriter
-from Server import *
+from config_ import filler, valid_data_fixed_len, record_filler_len, data_package_size
+import logging
 
+import soundfile
+
+from Server import *
+import logging
 import openai
 import socket
 import threading
@@ -16,7 +21,15 @@ import os
 import time
 import pygame
 from gtts import gTTS
+import base64
 from pydub import AudioSegment
+import soundfile as sf
+# from scipy.io.wavfile import read as wavread
+# from scipy.io.wavfile import write as wavwrite
+import pickle
+logging.basicConfig(format='[%(name)s] %(levelname)s: %(message)s', level=logging.INFO)
+logger = logging.getLogger("服务器")
+
 
 api_key = "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"
 openai.api_key = api_key
@@ -96,15 +109,80 @@ def sendString(msg):
         msg = msg + " "
     sock.sendall(bytes(msg, encoding="utf-8"))
 
+# def get_package_from_file(reader):
+#     real_data = reader.read(valid_data_fixed_len)
+#     if not real_data:
+#         return None
+#
+#     # 获取读取到的数据长度，不足使用填充符填充
+#     current_data_len = len(real_data)
+#
+#     # 获取填充数据
+#     fill_len = valid_data_fixed_len - current_data_len
+#     fill_data = (fill_len * filler).encode()
+#
+#     # record_data 用来记录数据包的信息
+#     record_data = f"{fill_len:0>{record_filler_len}d}".encode()
+#
+#     send_data = real_data + fill_data + record_data
+#     logger.debug(f"待发送数据包的 真实数据-填充-填充字符长度分别是: {len(real_data)} - {len(fill_data)} - {len(record_data)}")
+#
+#     # 将768个字节 utf8编码数据  转换1024个字节 base64编码数据
+#     data_package = base64.b64encode(send_data)
+#     return data_package
+
 
 def sendWAV(songPath):
-    sock.sendall(bytes(WAV_SPECIFIER, encoding="utf-8"))
-    print("sending wav file")
-    # file = wave.open(songPath, 'rb')
-    with open(songPath,"rb") as file:
-        data=file.read()
-        sock.sendall(data)
+    # sock.sendall(bytes(WAV_SPECIFIER, encoding="utf-8"))
 
+    print("sending wav file")
+    #
+
+    #
+    # try:
+    #     with open("temp.wav", "rb") as rf:
+    #         while True:
+    #             # 读取文件数据包
+    #             data_package = get_package_from_file(rf)
+    #             if not data_package:
+    #                 logger.info("传输完成！！")
+    #                 break
+    #             sock.send(data_package)
+    #             logger.debug(f"数据包为{data_package} 长度:{len(data_package)}")
+    # except Exception:
+    #     logger.warning("文件不存在！")
+
+
+
+    with open(songPath, "rb") as wavfile:
+        input_wav = wavfile.read()
+    sock.sendall(int.to_bytes(len(input_wav), 4, byteorder="little"))
+    time.sleep(0.1)
+    sock.sendall(input_wav)
+    print(len(input_wav))
+    print("send wav file")
+    # rate, data = wavread(io.BytesIO(input_wav))
+
+    # sock.sendall(rate)
+    # time.sleep(1)
+    # sock.sendall(data)
+    # time.sleep(1)
+    # with open(songPath,"rb") as file:
+    #     data=file.read()
+    # sock.sendall(data)
+    data, samplerate = sf.read(songPath)
+    print(samplerate)
+    # sock.sendall(pickle.dumps(samplerate))
+    # time.sleep(1)
+    # data_=pickle.dumps(data)
+    # print(data_)
+    # print(len(data_))
+    # sock.sendall(data_)
+    # time.sleep(1)
+
+
+
+    # file = wave.open(songPath, 'rb')
     # songData = str(file.getframerate()) + " " + str(file.getnframes())
     # sock.sendall(songData.encode("utf-8"))
     # sock.sendall(str(file.getframerate()).encode("utf-8"))
@@ -113,6 +191,7 @@ def sendWAV(songPath):
     # time.sleep(1)
     # sock.sendall(file.readframes(file.getnframes()))
     # time.sleep(1)
+
     # sock.sendall(bytes(str(file.getnchannels()), encoding="utf-8"))
     # sock.sendall(bytes(str(file.getsampwidth()), encoding="utf-8"))
     # sock.sendall(int.to_bytes(file.getnchannels()))
@@ -149,6 +228,7 @@ max_length_record_Voice = 5
 def keepReceiveMsg():
     while not exit:
         msg = getData()
+        print(msg)
         processedMsg = handleMsg(msg)
         TTS(processedMsg)
         mp3_to_wav(mp3_path)
@@ -163,7 +243,7 @@ def keepReceiveMsg():
 
 # build connection
 s = socket.socket()
-s.bind(("172.28.162.150", 9007))
+s.bind(("172.28.177.215", 9008))
 # n+1
 s.listen(5)
 # block, build session, sock_clint

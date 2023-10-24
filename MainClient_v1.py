@@ -8,7 +8,7 @@ import numpy as np
 import sherpa_ncnn
 import sys
 import sounddevice as sd
-import soundfile
+
 import soundfile as sf
 from gtts import gTTS
 import pygame
@@ -29,6 +29,31 @@ exit = False
 
 logging.basicConfig(format='[%(name)s] %(levelname)s: %(message)s', level=logging.INFO)
 logger = logging.getLogger("客户端")
+
+
+# def TTS(response, start_time):
+#     tts = gTTS(text=response, lang='en')  # 英文 "en", 普通话 "zh-CN", 粤语 "zh-yue", 日语 "ja"
+#     if os.path.exists(mp3_path):
+#         os.remove(mp3_path)
+#     tts.save(mp3_path)
+
+# running_time2 = time.time() - start_time
+# print("TTS running time:", running_time2, "seconds")
+
+
+# def play_mp3(file_path):
+#     pygame.init()
+#     pygame.mixer.init()
+#     pygame.mixer.music.load(file_path)
+#     pygame.mixer.music.play()
+#     # running_time2 = time.time() - start_time
+#     # print("play_mp3 running time:", running_time2, "seconds")
+#     while pygame.mixer.music.get_busy():
+#         continue
+#
+#     pygame.mixer.music.stop()
+#     pygame.mixer.quit()
+#     pygame.quit()
 
 
 def create_recognizer():
@@ -93,64 +118,67 @@ def sound_echo(recognizer, sample_rate, samples_per_read):
 
 def receiveMsg():
     totalData = bytes()
-    sock.settimeout(5)
-    while True:
-        try:
+    totallen=int.from_bytes(sock.recv(1024), byteorder='little')
+    # sock.settimeout(5)
+    while totallen!=0:
+        # try:
             data = sock.recv(1024)
             print(len(data))
-            if not data:
-                break
+            totallen-=len(data)
+            # if not data:
+            #     break
             totalData += data
             # if len(data) < 1024:
             #     break
-        except socket.timeout:
-            # Handle timeout by retransmitting the lost package
-            sock.send(b'RETRANSMIT')
+        # except socket.timeout:
+        #     # Handle timeout by retransmitting the lost package
+        #     sock.send(b'RETRANSMIT')
     print(len(totalData))
     return totalData
 
 
-def write_package_to_file(writer, data_package):
-    # 将1024个字节 base64编码数据解码为 768个字节utf8数据
-    recv_data = base64.b64decode(data_package)
-    logger.debug(f"接收的数据为: {recv_data}")
-    logger.debug(f"接收的数据长度为: {len(recv_data)}")
+# def write_package_to_file(writer, data_package):
+#     # 将1024个字节 base64编码数据解码为 768个字节utf8数据
+#     recv_data = base64.b64decode(data_package)
+#     logger.debug(f"接收的数据为: {recv_data}")
+#     logger.debug(f"接收的数据长度为: {len(recv_data)}")
+#
+#     # 字节流读取数据
+#     recv_data_stream = io.BytesIO(recv_data)
+#     # 返回一个对应于缓冲区内容的可读写视图而不必拷贝其数据
+#     recv_data_stream = recv_data_stream.getvalue()
+#
+#     # 获取填充字符的长度和记录填充字符所占用的长度 根据字节截取想要的数据
+#     fill_char_len = recv_data_stream[-record_filler_len:].decode()
+#     cut_len = int(fill_char_len) + record_filler_len
+#     recv_real_data = recv_data[:-cut_len]
+#     # 返回数据包的字节数据
+#     writer.write(recv_real_data)
 
-    # 字节流读取数据
-    recv_data_stream = io.BytesIO(recv_data)
-    # 返回一个对应于缓冲区内容的可读写视图而不必拷贝其数据
-    recv_data_stream = recv_data_stream.getvalue()
 
-    # 获取填充字符的长度和记录填充字符所占用的长度 根据字节截取想要的数据
-    fill_char_len = recv_data_stream[-record_filler_len:].decode()
-    cut_len = int(fill_char_len) + record_filler_len
-    recv_real_data = recv_data[:-cut_len]
-    # 返回数据包的字节数据
-    writer.write(recv_real_data)
-
-
-def receiveWAV(path):
-    with open(path, "wb") as wf:
-        while True:
-            data_package = sock.recv(data_package_size)
-            write_package_to_file(wf, data_package)
-            # 文件传输结束
-            if not data_package:
-                logger.info(f"{path} 下载完成！！")
-                break
+# def receiveWAV(path):
+#     with open(path, "wb") as wf:
+#         while True:
+#             data_package = sock.recv(data_package_size)
+#             write_package_to_file(wf, data_package)
+#             # 文件传输结束
+#             if not data_package:
+#                 logger.info(f"{path} 下载完成！！")
+#                 break
 
 
 def getData():
     print("********************************************************")
     # specifier = str(receiveMsg(), encoding="utf-8")
     # print("receive the specifier: " + specifier)
-    # if specifier == STRING_SPECIFIER:
-    #     receivedStr = str(receiveMsg(), encoding="utf-8")
-    #     print(receivedStr)
-    #     return receivedStr
-
+    # # if specifier == STRING_SPECIFIER:
+    # #     receivedStr = str(receiveMsg(), encoding="utf-8")
+    # #     print(receivedStr)
+    # #     return receivedStr
+    #
     # if specifier == WAV_SPECIFIER:
         # array with parameters
+
         # ww = wave.open('received.wav', 'wb')
         # ww.setnchannels(1)
         # ww.setsampwidth(2)
@@ -164,11 +192,11 @@ def getData():
         # ww.close()
         # print("received wav file")
 
-        # with open('received.wav', 'wb') as file:
-        #     data = receiveMsg()
-        #     file.write(data)
-        #     print("This is the write wav stage.")
-        #     print(data)
+    with open('received.wav', 'wb') as file:
+        data = receiveMsg()
+        file.write(data)
+        print("This is the write wav stage.")
+            # print(data)
         # sf.write('received.wav', np.frombuffer(literal_eval(str(receiveMsg(), encoding='utf-8')), samplerate=44100))
         # rate = pickle.loads(receiveMsg())
         # print(rate)
@@ -177,7 +205,7 @@ def getData():
         # print(str(len(re1)))
         # data = pickle.loads(re1)
         # soundfile.write('received.wav', data,  samplerate=rate)
-    receiveWAV('received.wav')
+    # receiveWAV('received.wav')
 
 
 
@@ -186,16 +214,17 @@ def getData():
 
 def play_wav(file_path):
     data, fs = sf.read(file_path)
-    sd.play(data, fs)
     event.clear()
+    sd.play(data, fs)
     sd.wait()
     event.set()
+    print("done")
 
 
 def processMsg():
     global last_result, length_last
     event.clear()
-    if len(last_result) - length_last < 5:
+    if len(last_result)-length_last<1:
         event.set()
         return "voiceInput:"
 
@@ -215,6 +244,7 @@ def sendString(msg):
     sock.sendall(bytes(msg, encoding="utf-8"))
 
 
+
 class keepMonitor(Thread):
     def __init__(self, name):
         super().__init__()
@@ -230,13 +260,11 @@ class keepMonitor(Thread):
         with sd.InputStream(channels=1, dtype="float32", samplerate=sample_rate) as s:
             event.set()
             while not exit:
-
-                if (len(last_result) > 500):
-                    list(last_result).pop(0)
                 event.wait()
+                if(len(last_result)>500):
+                    list(last_result).pop(0)
                 samples, _ = s.read(samples_per_read)  # a blocking read
                 samples = samples.reshape(-1)
-                event.wait()
                 recognizer.accept_waveform(sample_rate, samples)
                 result = recognizer.text
                 if last_result != result:
@@ -263,7 +291,7 @@ class keepReceiveMsg(Thread):
             msg = getData()
             print("receive kazhu difang 3")
             play_wav("received.wav")
-            time.sleep(4)
+            # time.sleep(4)
             # processedMsg = handleMsg(msg)
             # TTS(processedMsg)
             # sendMsg(processedMsg)
@@ -279,13 +307,12 @@ last_result = ""
 # sd.default.device[1] = 4
 
 sock = socket.socket()
-sock.connect(('172.28.162.150', 9008))
-# sock.connect(('192.168.137.138', 9007))
-
-event = threading.Event()
+sock.connect(('172.28.177.215', 9008))
+event=threading.Event()
 event.clear()
 tMonitor = keepMonitor("Monitor")
 tRec = keepReceiveMsg("Receive_Msg")
+
 
 # tSend = threading.Thread(target=mainSendMsg(), name="MainSendMsg")
 tRec.start()

@@ -4,7 +4,21 @@
 # import time
 # import sherpa_ncnn
 # import sys
-# import sounddevice as sd
+import sounddevice as sd
+import soundfile as sf
+
+def play_wav(file_path):
+    print(sd.query_devices())
+    data, fs = sf.read(file_path)
+    sd.play(data, fs)
+    sd.wait()
+    print("done")
+
+play_wav("received.wav")
+
+
+
+
 #
 # def  sound_setup():
 #     devices = sd.query_devices()
