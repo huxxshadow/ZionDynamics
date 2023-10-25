@@ -8,7 +8,7 @@ import time
 import sherpa_ncnn
 # import sys
 import sounddevice as sd
-
+import Adafruit_DHT
 import soundfile as sf
 # from gtts import gTTS
 
@@ -27,6 +27,14 @@ mp3_path = os.path.join(code_path, "mp3.mp3")
 STRING_SPECIFIER = "2222"
 WAV_SPECIFIER = "3333"
 exit = False
+
+makerobo_pin = 17
+global humidity,temperature
+humidity=0
+temperature=0
+def makerobo_setup():
+	global sensor
+	sensor = Adafruit_DHT.DHT11
 
 # logging.basicConfig(format='[%(name)s] %(levelname)s: %(message)s', level=logging.INFO)
 # logger = logging.getLogger("客户端")
@@ -242,11 +250,19 @@ def sendString(msg):
     print("this is the send message: " + msg)
     sock.sendall(bytes(STRING_SPECIFIER, encoding="utf-8"))
     time.sleep(0.1)
-    if len(msg) % 1024 == 0:
-        msg = msg + " "
+    global control_1
+    if control_1==1:
+        control_1==0;
+        msg+="\nhumidityInput:"+humidity+";"+temperature
+    # if len(msg) % 1024 == 0:
+    #     msg = msg + " "
     sock.sendall(bytes(msg, encoding="utf-8"))
 
-
+def getHumiture(num):
+    if num%10==0:
+        global humidity,temperature,control_1
+        humidity, temperature = Adafruit_DHT.read_retry(sensor, makerobo_pin)
+        control_1=1
 
 class keepMonitor(Thread):
     def __init__(self, name):
@@ -256,6 +272,7 @@ class keepMonitor(Thread):
     def run(self):
         global last_result
         print("Started! Please speak")
+
         recognizer = create_recognizer()
         sample_rate = recognizer.sample_rate
         samples_per_read = int(0.1 * sample_rate)  # 0.1 second = 100 ms
@@ -282,7 +299,9 @@ class keepReceiveMsg(Thread):
         self.name = name
 
     def run(self):
+        makerobo_setup()
         event.wait()  # wait for the monitor to initialize
+        loopNum=0;
         while not exit:
             input_Msg = processMsg()
             if input_Msg == "voiceInput:":
@@ -295,6 +314,11 @@ class keepReceiveMsg(Thread):
             print("receive kazhu difang 3")
             play_wav("received.wav")
             print("sssssssssssssss")
+            loopNum+=1
+            getHumiture(loopNum)
+
+
+
             # time.sleep(4)
             # processedMsg = handleMsg(msg)
             # TTS(processedMsg)

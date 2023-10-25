@@ -18,8 +18,6 @@ STRING_SPECIFIER = "2222"
 WAV_SPECIFIER = "3333"
 exit = False
 
-now: time.time()
-
 
 
 # def TTS(response, start_time):
@@ -30,7 +28,6 @@ now: time.time()
 
     # running_time2 = time.time() - start_time
     # print("TTS running time:", running_time2, "seconds")
-
 
 # def play_mp3(file_path):
 #     pygame.init()
