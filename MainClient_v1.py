@@ -27,8 +27,8 @@ STRING_SPECIFIER = "2222"
 WAV_SPECIFIER = "3333"
 exit = False
 
-logging.basicConfig(format='[%(name)s] %(levelname)s: %(message)s', level=logging.INFO)
-logger = logging.getLogger("客户端")
+# logging.basicConfig(format='[%(name)s] %(levelname)s: %(message)s', level=logging.INFO)
+# logger = logging.getLogger("客户端")
 
 
 # def TTS(response, start_time):
@@ -97,7 +97,7 @@ def soundInput_initial():
     print(f'Use default device: {devices[default_input_device_idx]["name"]}')
     recognizer = create_recognizer()
     sample_rate = recognizer.sample_rate
-    samples_per_read = int(3 * sample_rate)  # 0.1 second = 100 ms
+    samples_per_read = int(0.1 * sample_rate)  # 0.1 second = 100 ms
     global last_result
     last_result = ""
     return recognizer, sample_rate, samples_per_read
@@ -123,7 +123,7 @@ def receiveMsg():
     while totallen!=0:
         # try:
             data = sock.recv(1024)
-            print(len(data))
+            # print(len(data))
             totallen-=len(data)
             # if not data:
             #     break
@@ -224,7 +224,7 @@ def play_wav(file_path):
 def processMsg():
     global last_result, length_last
     event.clear()
-    if len(last_result)-length_last<1:
+    if len(last_result)-length_last<3:
         event.set()
         return "voiceInput:"
 
@@ -307,7 +307,7 @@ last_result = ""
 # sd.default.device[1] = 4
 
 sock = socket.socket()
-sock.connect(('172.28.177.215', 9008))
+sock.connect(('172.28.165.132', 9008))
 event=threading.Event()
 event.clear()
 tMonitor = keepMonitor("Monitor")
