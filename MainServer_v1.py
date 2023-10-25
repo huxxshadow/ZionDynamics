@@ -37,7 +37,8 @@ code_path = os.path.dirname(os.path.abspath(__file__))
 mp3_path = os.path.join(code_path, "mp3.mp3")
 
 voiceInput = []
-dict_input = {"voiceInput": voiceInput, }
+humidityInput=[]
+dict_input = {"voiceInput": voiceInput,"humidityInput":humidityInput}
 voiceOutput = []
 
 STRING_SPECIFIER = "2222"
@@ -202,25 +203,37 @@ def sendWAV(songPath):
 
 def handleMsg(msg):
     input_list = msg.splitlines()
-
+    out=""
     for input_line in input_list:
         input_ = input_line.split(":", 1)
         inputType = input_[0]
         input_content = input_[1]
         dict_input[inputType].append(input_content)
 
-    if inputType == "voiceInput":
-        if len(voiceInput) > 1:
-            response = askChatGPT(dict_input["voiceInput"][-1], dict_input["voiceInput"][0:-1], voiceOutput)
-        else:
-            response = askChatGPT(dict_input["voiceInput"][-1], [], [])
-        voiceOutput.append(response)
+        if inputType == "voiceInput":
+            if len(voiceInput) > 1:
+                response = askChatGPT(dict_input["voiceInput"][-1], dict_input["voiceInput"][0:-1], voiceOutput)
+            else:
+                response = askChatGPT(dict_input["voiceInput"][-1], [], [])
+            voiceOutput.append(response)
 
-        if len(voiceInput) > max_length_record_Voice:
-            voiceInput.pop(0)
-        if len(voiceOutput) > max_length_record_Voice:
-            voiceOutput.pop(0)
-        out = response  # for temporary use
+            if len(voiceInput) > max_length_record_Voice:
+                voiceInput.pop(0)
+            if len(voiceOutput) > max_length_record_Voice:
+                voiceOutput.pop(0)
+            out+= response  # for temporary use
+
+        if inputType =="humidityInput":
+            hum=input_content.split(";")
+            humidity=hum[0]
+            temperature=hum[1]
+            if (temperature>18):
+                out=f"警告警告,温度已达{temperature},烧死我啦，嘟嘟鲁"
+
+
+
+
+
     return out
 
 
