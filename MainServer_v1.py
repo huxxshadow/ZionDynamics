@@ -76,7 +76,9 @@ def TTS(response):
 
 def mp3_to_wav(mp3_path):
     sound = AudioSegment.from_mp3(mp3_path)
+    print(sound.frame_rate)
     sound.export("temp.wav", format="wav")
+
 
 def receiveMsg():
     totalData = bytes()

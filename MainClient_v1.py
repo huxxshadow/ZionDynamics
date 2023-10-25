@@ -1,25 +1,26 @@
-import asyncio
-import io
+# import asyncio
+# import io
 import os
 import time
-import wave
+# import wave
 
-import numpy as np
+# import numpy as np
 import sherpa_ncnn
-import sys
+# import sys
 import sounddevice as sd
 
 import soundfile as sf
-from gtts import gTTS
-import pygame
+# from gtts import gTTS
+
+# import pygame
 import socket
 from threading import Thread
 import threading
-import struct
-import pickle
-import logging
-import base64
-from config_ import record_filler_len, data_package_size
+# import struct
+# import pickle
+# import logging
+# import base64
+# from config_ import record_filler_len, data_package_size
 
 code_path = os.path.dirname(os.path.abspath(__file__))
 mp3_path = os.path.join(code_path, "mp3.mp3")
@@ -103,17 +104,17 @@ def soundInput_initial():
     return recognizer, sample_rate, samples_per_read
 
 
-def sound_echo(recognizer, sample_rate, samples_per_read):
-    global last_result
-    with sd.InputStream(channels=1, dtype="float32", samplerate=sample_rate) as s:
-        samples, _ = s.read(samples_per_read)  # a blocking read
-        samples = samples.reshape(-1)
-        recognizer.accept_waveform(sample_rate, samples)
-        result = recognizer.text
-        # if last_result != result:
-        #     last_result = result
-        #     print("\r{}".format(result), end="", flush=True)
-        return result
+# def sound_echo(recognizer, sample_rate, samples_per_read):
+#     global last_result
+#     with sd.InputStream(channels=1, dtype="float32", samplerate=sample_rate) as s:
+#         samples, _ = s.read(samples_per_read)  # a blocking read
+#         samples = samples.reshape(-1)
+#         recognizer.accept_waveform(sample_rate, samples)
+#         result = recognizer.text
+#         # if last_result != result:
+#         #     last_result = result
+#         #     print("\r{}".format(result), end="", flush=True)
+#         return result
 
 
 def receiveMsg():
@@ -215,10 +216,12 @@ def getData():
 def play_wav(file_path):
     data, fs = sf.read(file_path)
     event.clear()
+    print(fs)
+    print("时间开始流动")
     sd.play(data, fs)
     sd.wait()
     event.set()
-    print("done")
+    print("时间流动结束")
 
 
 def processMsg():
@@ -262,7 +265,8 @@ class keepMonitor(Thread):
             while not exit:
                 event.wait()
                 if(len(last_result)>500):
-                    list(last_result).pop(0)
+                    last_result=last_result[10:len(last_result)]
+
                 samples, _ = s.read(samples_per_read)  # a blocking read
                 samples = samples.reshape(-1)
                 recognizer.accept_waveform(sample_rate, samples)
@@ -280,7 +284,6 @@ class keepReceiveMsg(Thread):
     def run(self):
         event.wait()  # wait for the monitor to initialize
         while not exit:
-
             input_Msg = processMsg()
             if input_Msg == "voiceInput:":
                 continue
@@ -291,6 +294,7 @@ class keepReceiveMsg(Thread):
             msg = getData()
             print("receive kazhu difang 3")
             play_wav("received.wav")
+            print("sssssssssssssss")
             # time.sleep(4)
             # processedMsg = handleMsg(msg)
             # TTS(processedMsg)
