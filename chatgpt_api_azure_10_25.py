@@ -7,6 +7,7 @@ import wave
 
 api_key = "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"
 openai.api_key = api_key
+
 azure_key = '41772f6a68ad4b6aa64d8a18f2f8a150'
 region = 'eastus'
 subscription_key = azure_key
@@ -18,16 +19,17 @@ speech_config = speechsdk.SpeechConfig(subscription='41772f6a68ad4b6aa64d8a18f2f
 
 # The language of the voice that speaks.
 speech_config.speech_synthesis_voice_name = "zh-CN-XiaoxiaoNeural"
-speech_synthesizer = speechsdk.SpeechSynthesizer(speech_config=speech_config,audio_config=None)
-
+speech_config.set_speech_synthesis_output_format(speechsdk.SpeechSynthesisOutputFormat.Riff44100Hz16BitMonoPcm)
+file_config = speechsdk.audio.AudioOutputConfig(filename=mp3_path)
+speech_synthesizer = speechsdk.SpeechSynthesizer(speech_config=speech_config,audio_config=file_config)
 def TTS(text, start_time):
-    result = speech_synthesizer.speak_text_async(text).get()
-    audio_data = result.audio_data
-    with wave.open(mp3_path, 'wb') as wave_file:
-        wave_file.setnchannels(1)  # Set the number of channels (1 for mono, 2 for stereo)
-        wave_file.setsampwidth(2)  # Set the sample width (2 bytes for 16-bit audio)
-        wave_file.setframerate(16000)  # Set the sample rate (e.g., 16000 Hz)
-        wave_file.writeframes(audio_data)
+    speech_synthesizer.speak_text_async(text)
+    # audio_data = result.audio_data
+    # with wave.open(mp3_path, 'wb') as wave_file:
+    #     wave_file.setnchannels(1)  # Set the number of channels (1 for mono, 2 for stereo)
+    #     wave_file.setsampwidth(2)  # Set the sample width (2 bytes for 16-bit audio)
+    #     wave_file.setframerate(16000)  # Set the sample rate (e.g., 16000 Hz)
+    #     wave_file.writeframes(audio_data)
     running_time2 = time.time() - start_time
     print("TTS running time:", running_time2, "seconds")
 

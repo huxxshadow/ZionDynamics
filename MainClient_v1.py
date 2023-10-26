@@ -22,6 +22,9 @@ import threading
 # import base64
 # from config_ import record_filler_len, data_package_size
 
+
+experissonIdle={"静态1":"./expressions/ ","静态2":" ","静态3":" "}
+experissonIdle={}
 code_path = os.path.dirname(os.path.abspath(__file__))
 mp3_path = os.path.join(code_path, "mp3.mp3")
 STRING_SPECIFIER = "2222"

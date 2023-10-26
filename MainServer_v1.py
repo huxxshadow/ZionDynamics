@@ -19,22 +19,39 @@ import array
 # import torch
 import os
 import time
-import pygame
+# import pygame
 from gtts import gTTS
-import base64
+# import base64
 from pydub import AudioSegment
 import soundfile as sf
+
+import azure.cognitiveservices.speech as speechsdk
+
+azure_key = '41772f6a68ad4b6aa64d8a18f2f8a150'
+region = 'eastus'
+subscription_key = azure_key
+
 # from scipy.io.wavfile import read as wavread
 # from scipy.io.wavfile import write as wavwrite
-import pickle
-logging.basicConfig(format='[%(name)s] %(levelname)s: %(message)s', level=logging.INFO)
-logger = logging.getLogger("服务器")
+
+# logging.basicConfig(format='[%(name)s] %(levelname)s: %(message)s', level=logging.INFO)
+# logger = logging.getLogger("服务器")
+
+# This example requires environment variables named "SPEECH_KEY" and "SPEECH_REGION"
+speech_config = speechsdk.SpeechConfig(subscription='41772f6a68ad4b6aa64d8a18f2f8a150', region='eastus')
+
+# The language of the voice that speaks.
+speech_config.speech_synthesis_voice_name = "zh-CN-XiaoxiaoNeural"
+# speech_synthesizer = speechsdk.SpeechSynthesizer(speech_config=speech_config,audio_config=None)
+speech_config.set_speech_synthesis_output_format(speechsdk.SpeechSynthesisOutputFormat.Riff44100Hz16BitMonoPcm)
+file_config = speechsdk.audio.AudioOutputConfig(filename="temp.wav")
+speech_synthesizer = speechsdk.SpeechSynthesizer(speech_config=speech_config,audio_config=file_config)
 
 
 api_key = "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"
 openai.api_key = api_key
 code_path = os.path.dirname(os.path.abspath(__file__))
-mp3_path = os.path.join(code_path, "mp3.mp3")
+mp3_path = os.path.join(code_path, "temp.wav")
 
 voiceInput = []
 humidityInput=[]
@@ -69,11 +86,21 @@ def askChatGPT(current_question, question_record, response_record):
     return answer
 
 
-def TTS(response):
-    tts = gTTS(text=response, lang='zh-CN')  # 英文 "en", 普通话 "zh-CN", 粤语 "zh-yue", 日语 "ja"
-    if os.path.exists(mp3_path):
-        os.remove(mp3_path)
-    tts.save(mp3_path)
+def TTS(textResponse):
+    result = speech_synthesizer.speak_text_async(textResponse).get()
+    # audio_data = result.audio_data
+    # with wave.open(mp3_path, 'wb') as wave_file:
+    #     wave_file.setnchannels(1)  # Set the number of channels (1 for mono, 2 for stereo)
+    #     wave_file.setsampwidth(2)  # Set the sample width (2 bytes for 16-bit audio)
+    #     wave_file.setframerate(16000)  # Set the sample rate (e.g., 16000 Hz)
+    #     wave_file.writeframes(audio_data)
+
+
+
+    # tts = gTTS(text=response, lang='zh-CN')  # 英文 "en", 普通话 "zh-CN", 粤语 "zh-yue", 日语 "ja"
+    # if os.path.exists(mp3_path):
+    #     os.remove(mp3_path)
+    # tts.save(mp3_path)
 
 def mp3_to_wav(mp3_path):
     sound = AudioSegment.from_mp3(mp3_path)
@@ -227,10 +254,10 @@ def handleMsg(msg):
             hum=input_content.split(";")
             humidity=hum[0]
             temperature=hum[1]
-            if (temperature>18):
-                out+=f"警告警告,温度已达{temperature},烧死我啦，嘟嘟鲁"
-            if (humidity>30):
-                out+=f"警告警告,湿度已达{humidity},淹死我啦，嘟嘟鲁"
+            if (float(temperature)>18):
+                out+=f"警告警告,温度已达{temperature},烧死我啦，嘟嘟鲁。"
+            if (float(humidity)>30):
+                out+=f"警告警告,湿度已达{humidity},淹死我啦，嘟嘟鲁。"
 
 
 
@@ -247,7 +274,7 @@ def keepReceiveMsg():
         print(msg)
         processedMsg = handleMsg(msg)
         TTS(processedMsg)
-        mp3_to_wav(mp3_path)
+        # mp3_to_wav(mp3_path)
         sendWAV("temp.wav")
         time.sleep(0.05)
         # sendMsg(processedMsg)
@@ -259,7 +286,7 @@ def keepReceiveMsg():
 
 # build connection
 s = socket.socket()
-s.bind(("172.28.165.132", 9008))
+s.bind(("172.28.187.208", 9008))
 # n+1
 s.listen(5)
 # block, build session, sock_clint
