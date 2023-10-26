@@ -228,8 +228,9 @@ def handleMsg(msg):
             humidity=hum[0]
             temperature=hum[1]
             if (temperature>18):
-                out=f"警告警告,温度已达{temperature},烧死我啦，嘟嘟鲁"
-
+                out+=f"警告警告,温度已达{temperature},烧死我啦，嘟嘟鲁"
+            if (humidity>30):
+                out+=f"警告警告,湿度已达{humidity},淹死我啦，嘟嘟鲁"
 
 
 

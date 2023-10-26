@@ -317,14 +317,20 @@ class keepReceiveMsg(Thread):
             loopNum+=1
             getHumiture(loopNum)
 
+class keepPlayingV(Thread):
+    def __init__(self, name):
+        super().__init__()
+        self.name = name
+
+    def run(self):
+        pass
 
 
-            # time.sleep(4)
-            # processedMsg = handleMsg(msg)
-            # TTS(processedMsg)
-            # sendMsg(processedMsg)
-            # time.sleep(5)
-            # print("the sleep 5s hou")
+
+
+
+
+
 
 
 global last_result, length_last
@@ -345,6 +351,7 @@ tRec = keepReceiveMsg("Receive_Msg")
 # tSend = threading.Thread(target=mainSendMsg(), name="MainSendMsg")
 tRec.start()
 tMonitor.start()
+
 
 # tSend.start()
 
