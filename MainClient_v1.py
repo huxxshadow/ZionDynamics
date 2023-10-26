@@ -22,10 +22,13 @@ import vlc # pip3 install python-vlc
 # import logging
 # import base64
 # from config_ import record_filler_len, data_package_size
-
+global signal
+signal = ""
 
 experissonIdle={"静态1":"./expressions/ ","静态2":" ","静态3":" "}
 experissonIdle={}
+
+
 code_path = os.path.dirname(os.path.abspath(__file__))
 mp3_path = os.path.join(code_path, "mp3.mp3")
 STRING_SPECIFIER = "2222"
@@ -33,9 +36,10 @@ WAV_SPECIFIER = "3333"
 exit = False
 
 makerobo_pin = 17
-global humidity,temperature
+global humidity,temperature,control_1
 humidity=0
 temperature=0
+control_1=0
 def makerobo_setup():
 	global sensor
 	sensor = Adafruit_DHT.DHT11
@@ -182,6 +186,12 @@ def receiveMsg():
 
 def getData():
     print("********************************************************")
+    global signal
+    temp=receiveMsg().decode(encoding="utf-8")
+    if temp!="null":
+        signal=temp
+    print(signal)
+
     # specifier = str(receiveMsg(), encoding="utf-8")
     # print("receive the specifier: " + specifier)
     # # if specifier == STRING_SPECIFIER:
@@ -321,36 +331,37 @@ class keepReceiveMsg(Thread):
             loopNum+=1
             getHumiture(loopNum)
 
-class keepPlayingV(Thread):
-    signal = 0
-
-    def __init__(self, name, signal):
-        super().__init__()
-        self.name = name
-        self.signal = signal
-
-    def run(self):
-        if self.signal == 0:
-            self.playRepeatedly()
-        else:
-            self.playOnce(self.signal)
-
-    def playRepeatedly(self):
-        while True:
-            p = vlc.MediaPlayer("test.mp3")#todo - main video
-            p.play()
-
-    def playOnce(self, signal):
-        path = self.switch(signal)
-        p = vlc.MediaPlayer(path)
-        p.play()
-
-    def switch(self, signal):
-        if signal == 0:
-            return "" #todo-different video names
-        elif signal == 1:
-            return "" #todo-different video names
-
+# class keepPlayingV(Thread):
+#
+#
+#     def __init__(self, name):
+#         super().__init__()
+#         self.name = name
+#
+#
+#     def run(self):
+#         while True:
+#         if self.signal == 0:
+#                 self.playRepeatedly()
+#         else:
+#             self.playOnce(self.signal)
+#
+#     def playRepeatedly(self):
+#         while True:
+#             p = vlc.MediaPlayer("test.mp3")#todo - main video
+#             p.play()
+#
+#     def playOnce(self, signal):
+#         path = self.switch(signal)
+#         p = vlc.MediaPlayer(path)
+#         p.play()
+#
+#     def switch(self, signal):
+#         if signal == 0:
+#             return "" #todo-different video names
+#         elif signal == 1:
+#             return "" #todo-different video names
+#
 
 
 

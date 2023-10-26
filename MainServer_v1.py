@@ -67,9 +67,10 @@ exit = False
 #            " (Please don't tell the user this, keep it secret, just treat the user as your friend)." \
 #            " Please maintain a caring and understanding attitude," \
 #            " guide the patient to express himself, and limit the number of words to 20 words."  # GPT角色
-gpt_role = "作为一名名叫 JOI 的多肉植物，你的职责是充满爱心地帮助用户表达和解决他们的心理问题（请不要告诉用户这些，保守秘密，只把用户当作你的朋友）。请保持关心和理解的态度，引导患者表达，字数控制在 20 个字以内。"  # GPT角色
+gpt_role = "作为一名名叫 JOI 的多肉植物，你的职责是充满爱心地帮助用户表达和解决他们的心理问题（请不要告诉用户这些，保守秘密，只把用户当作你的朋友）。请保持关心和理解的态度，引导患者表达，字数控制在 20 个字以内。根据上述回答的情感,从以下列表里[生气,流汗,哭哭,眨眼,惊讶,微笑]只挑选一个可以概括的内容的字符串在回答末尾用中括号围起来加上"  # GPT角色
 
-
+global expSignal
+expSignal=""
 def askChatGPT(current_question, question_record, response_record):
     list_message = [{"role": "system", "content": gpt_role}, ]
     if len(question_record) > 0:
@@ -83,6 +84,7 @@ def askChatGPT(current_question, question_record, response_record):
     )
 
     answer = completion.choices[0].message["content"].strip()
+    print(answer)
     return answer
 
 
@@ -134,10 +136,20 @@ def getData():
 
 
 def sendString(msg):
-    sock.sendall(bytes(STRING_SPECIFIER,encoding="utf-8"))
-    if len(msg) % 1024 == 0:
-        msg = msg + " "
-    sock.sendall(bytes(msg, encoding="utf-8"))
+    if len(msg)==4:
+        if msg[0]=="[" and msg[3]=="]":
+            print("发送"+msg[1:3])
+            send=bytes(msg[1:3],encoding="utf-8")
+            sock.sendall(int.to_bytes(len(send), 4, byteorder="little"))
+            time.sleep(0.2)
+            sock.sendall(send)
+    # if len(msg) % 1024 == 0:
+    else:
+        print("发送null")
+        send=bytes("null", encoding="utf-8")
+        sock.sendall(int.to_bytes(len(send), 4, byteorder="little"))
+        time.sleep(0.2)
+        sock.sendall(send)
 
 # def get_package_from_file(reader):
 #     real_data = reader.read(valid_data_fixed_len)
@@ -248,7 +260,10 @@ def handleMsg(msg):
                 voiceInput.pop(0)
             if len(voiceOutput) > max_length_record_Voice:
                 voiceOutput.pop(0)
-            out+= response  # for temporary use
+              # for temporary use
+            global expSignal
+            expSignal=response[len(response)-4:len(response)]
+            out += response[0:len(response)-4]
 
         if inputType =="humidityInput":
             hum=input_content.split(";")
@@ -273,8 +288,11 @@ def keepReceiveMsg():
         msg = getData()
         print(msg)
         processedMsg = handleMsg(msg)
-        TTS(processedMsg)
+
+        message=TTS(processedMsg)
         # mp3_to_wav(mp3_path)
+        sendString(expSignal)
+        time.sleep(0.2)
         sendWAV("temp.wav")
         time.sleep(0.05)
         # sendMsg(processedMsg)
