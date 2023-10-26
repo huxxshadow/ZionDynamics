@@ -16,6 +16,7 @@ import soundfile as sf
 import socket
 from threading import Thread
 import threading
+import vlc # pip3 install python-vlc
 # import struct
 # import pickle
 # import logging
@@ -321,16 +322,34 @@ class keepReceiveMsg(Thread):
             getHumiture(loopNum)
 
 class keepPlayingV(Thread):
-    def __init__(self, name):
+    signal = 0
+
+    def __init__(self, name, signal):
         super().__init__()
         self.name = name
+        self.signal = signal
 
     def run(self):
-        pass
+        if self.signal == 0:
+            self.playRepeatedly()
+        else:
+            self.playOnce(self.signal)
 
+    def playRepeatedly(self):
+        while True:
+            p = vlc.MediaPlayer("test.mp3")#todo - main video
+            p.play()
 
+    def playOnce(self, signal):
+        path = self.switch(signal)
+        p = vlc.MediaPlayer(path)
+        p.play()
 
-
+    def switch(self, signal):
+        if signal == 0:
+            return "" #todo-different video names
+        elif signal == 1:
+            return "" #todo-different video names
 
 
 
