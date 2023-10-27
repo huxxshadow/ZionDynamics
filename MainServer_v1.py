@@ -43,15 +43,16 @@ speech_config = speechsdk.SpeechConfig(subscription='41772f6a68ad4b6aa64d8a18f2f
 # The language of the voice that speaks.
 speech_config.speech_synthesis_voice_name = "zh-CN-XiaoxiaoNeural"
 # speech_synthesizer = speechsdk.SpeechSynthesizer(speech_config=speech_config,audio_config=None)
-speech_config.set_speech_synthesis_output_format(speechsdk.SpeechSynthesisOutputFormat.Riff44100Hz16BitMonoPcm)
-file_config = speechsdk.audio.AudioOutputConfig(filename="temp.wav")
-speech_synthesizer = speechsdk.SpeechSynthesizer(speech_config=speech_config,audio_config=file_config)
+# speech_config.set_speech_synthesis_output_format(speechsdk.SpeechSynthesisOutputFormat.Riff44100Hz16BitMonoPcm)
+speech_config.set_speech_synthesis_output_format(speechsdk.SpeechSynthesisOutputFormat.Audio16Khz64KBitRateMonoMp3)
+file_config = speechsdk.audio.AudioOutputConfig(filename="temp.mp3")
+
 
 
 api_key = "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"
 openai.api_key = api_key
 code_path = os.path.dirname(os.path.abspath(__file__))
-mp3_path = os.path.join(code_path, "temp.wav")
+mp3_path = os.path.join(code_path, "temp.mp3")
 
 voiceInput = []
 humidityInput=[]
@@ -89,6 +90,7 @@ def askChatGPT(current_question, question_record, response_record):
 
 
 def TTS(textResponse):
+    speech_synthesizer = speechsdk.SpeechSynthesizer(speech_config=speech_config, audio_config=file_config)
     result = speech_synthesizer.speak_text_async(textResponse).get()
     # audio_data = result.audio_data
     # with wave.open(mp3_path, 'wb') as wave_file:
@@ -121,12 +123,12 @@ def receiveMsg():
 
 
 def getData():
-    specifier = str(receiveMsg(), encoding="utf-8")
-    print("this is the specifier: " + specifier)
-    if specifier == STRING_SPECIFIER:
-        receivedStr = str(receiveMsg(), encoding="utf-8")
-        print("this is the receive msg: " + receivedStr+"###")
-        return receivedStr
+    # specifier = str(receiveMsg(), encoding="utf-8")
+    # print("this is the specifier: " + specifier)
+    # if specifier == STRING_SPECIFIER:
+    receivedStr = str(receiveMsg(), encoding="utf-8")
+    print("this is the receive msg: " + receivedStr+"###")
+    return receivedStr
     # elif specifier == WAV_SPECIFIER:
     #     data = receiveMsg()
     #     ww = wave.open('received.wav', 'wb')
@@ -139,16 +141,17 @@ def sendString(msg):
     if len(msg)==4:
         if msg[0]=="[" and msg[3]=="]":
             print("发送"+msg[1:3])
-            send=bytes(msg[1:3],encoding="utf-8")
-            sock.sendall(int.to_bytes(len(send), 4, byteorder="little"))
-            time.sleep(0.2)
+            send=msg[1:3].encode("utf-8")
+            print(len(send))
+            sock.sendall(send)
+        else:
+            print("发送wrong")
+            send = "nu".encode("utf-8")
             sock.sendall(send)
     # if len(msg) % 1024 == 0:
     else:
         print("发送null")
-        send=bytes("null", encoding="utf-8")
-        sock.sendall(int.to_bytes(len(send), 4, byteorder="little"))
-        time.sleep(0.2)
+        send="nu".encode("utf-8")
         sock.sendall(send)
 
 # def get_package_from_file(reader):
@@ -292,9 +295,9 @@ def keepReceiveMsg():
         message=TTS(processedMsg)
         # mp3_to_wav(mp3_path)
         sendString(expSignal)
-        time.sleep(0.2)
-        sendWAV("temp.wav")
-        time.sleep(0.05)
+        time.sleep(0.01)
+        sendWAV("temp.mp3")
+        time.sleep(0.02)
         # sendMsg(processedMsg)
 
 
@@ -304,7 +307,7 @@ def keepReceiveMsg():
 
 # build connection
 s = socket.socket()
-s.bind(("172.28.187.208", 9008))
+s.bind(("172.28.167.247", 9009))
 # n+1
 s.listen(5)
 # block, build session, sock_clint

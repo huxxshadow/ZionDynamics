@@ -8,7 +8,7 @@ import time
 import sherpa_ncnn
 # import sys
 import sounddevice as sd
-import Adafruit_DHT
+# import Adafruit_DHT
 import soundfile as sf
 # from gtts import gTTS
 
@@ -16,7 +16,10 @@ import soundfile as sf
 import socket
 from threading import Thread
 import threading
-import vlc # pip3 install python-vlc
+
+from pydub import AudioSegment
+
+# import vlc # pip3 install python-vlc
 # import struct
 # import pickle
 # import logging
@@ -40,9 +43,10 @@ global humidity,temperature,control_1
 humidity=0
 temperature=0
 control_1=0
-def makerobo_setup():
-	global sensor
-	sensor = Adafruit_DHT.DHT11
+
+# def makerobo_setup():
+# 	global sensor
+# 	sensor = Adafruit_DHT.DHT11
 
 # logging.basicConfig(format='[%(name)s] %(levelname)s: %(message)s', level=logging.INFO)
 # logger = logging.getLogger("客户端")
@@ -107,17 +111,17 @@ def create_recognizer():
 #     await writer.wait_closed()
 
 
-def soundInput_initial():
-    devices = sd.query_devices()
-    print(devices)
-    default_input_device_idx = sd.default.device[0]
-    print(f'Use default device: {devices[default_input_device_idx]["name"]}')
-    recognizer = create_recognizer()
-    sample_rate = recognizer.sample_rate
-    samples_per_read = int(0.1 * sample_rate)  # 0.1 second = 100 ms
-    global last_result
-    last_result = ""
-    return recognizer, sample_rate, samples_per_read
+# def soundInput_initial():
+#     devices = sd.query_devices()
+#     print(devices)
+#     default_input_device_idx = sd.default.device[0]
+#     print(f'Use default device: {devices[default_input_device_idx]["name"]}')
+#     recognizer = create_recognizer()
+#     sample_rate = recognizer.sample_rate
+#     samples_per_read = int(0.1 * sample_rate)  # 0.1 second = 100 ms
+#     global last_result
+#     last_result = ""
+#     return recognizer, sample_rate, samples_per_read
 
 
 # def sound_echo(recognizer, sample_rate, samples_per_read):
@@ -133,9 +137,9 @@ def soundInput_initial():
 #         return result
 
 
-def receiveMsg():
+def receiveLongMsg():
     totalData = bytes()
-    totallen=int.from_bytes(sock.recv(1024), byteorder='little')
+    totallen=int.from_bytes(sock.recv(4), byteorder='little')
     # sock.settimeout(5)
     while totallen!=0:
         # try:
@@ -152,6 +156,10 @@ def receiveMsg():
         #     sock.send(b'RETRANSMIT')
     print(len(totalData))
     return totalData
+
+def receiveShortMsg(len):
+    data = sock.recv(len)
+    return data
 
 
 # def write_package_to_file(writer, data_package):
@@ -187,11 +195,10 @@ def receiveMsg():
 def getData():
     print("********************************************************")
     global signal
-    temp=receiveMsg().decode(encoding="utf-8")
-    if temp!="null":
+    temp=receiveShortMsg(6).decode(encoding="utf-8")
+    if temp!="nu":
         signal=temp
     print(signal)
-
     # specifier = str(receiveMsg(), encoding="utf-8")
     # print("receive the specifier: " + specifier)
     # # if specifier == STRING_SPECIFIER:
@@ -215,8 +222,8 @@ def getData():
         # ww.close()
         # print("received wav file")
 
-    with open('received.wav', 'wb') as file:
-        data = receiveMsg()
+    with open('received.mp3', 'wb') as file:
+        data = receiveLongMsg()
         file.write(data)
         print("This is the write wav stage.")
             # print(data)
@@ -230,7 +237,10 @@ def getData():
         # soundfile.write('received.wav', data,  samplerate=rate)
     # receiveWAV('received.wav')
 
-
+def mp3_to_wav(mp3_path):
+    sound = AudioSegment.from_mp3(mp3_path)
+    print(sound.frame_rate)
+    sound.export("received.wav", format="wav")
 
 
 
@@ -249,7 +259,7 @@ def play_wav(file_path):
 def processMsg():
     global last_result, length_last
     event.clear()
-    if len(last_result)-length_last<3:
+    if len(last_result)-length_last<5:
         event.set()
         return "voiceInput:"
 
@@ -261,9 +271,9 @@ def processMsg():
 
 
 def sendString(msg):
-    print("this is the send message: " + msg)
-    sock.sendall(bytes(STRING_SPECIFIER, encoding="utf-8"))
-    time.sleep(0.1)
+    # print("this is the send message: " + msg)
+    # sock.sendall(bytes(STRING_SPECIFIER, encoding="utf-8"))
+    # time.sleep(0.1)
     global control_1
     if control_1==1:
         control_1==0;
@@ -272,11 +282,11 @@ def sendString(msg):
     #     msg = msg + " "
     sock.sendall(bytes(msg, encoding="utf-8"))
 
-def getHumiture(num):
-    if num%10==0:
-        global humidity,temperature,control_1
-        humidity, temperature = Adafruit_DHT.read_retry(sensor, makerobo_pin)
-        control_1=1
+# def getHumiture(num):
+#     if num%10==0:
+#         global humidity,temperature,control_1
+#         humidity, temperature = Adafruit_DHT.read_retry(sensor, makerobo_pin)
+#         control_1=1
 
 class keepMonitor(Thread):
     def __init__(self, name):
@@ -286,10 +296,18 @@ class keepMonitor(Thread):
     def run(self):
         global last_result
         print("Started! Please speak")
+        devices = sd.query_devices()
+        print(devices)
+        sd.default.device[1] = 0
+        sd.default.device[0] = 0
+        sd.default.samplerate = 16000
+        sd.default.channels = 1, 2
+        default_input_device_idx = sd.default.device[0]
 
+        print(f'Use default device: {devices[default_input_device_idx]["name"]}')
         recognizer = create_recognizer()
         sample_rate = recognizer.sample_rate
-        samples_per_read = int(0.1 * sample_rate)  # 0.1 second = 100 ms
+        samples_per_read = int(0.3 * sample_rate)  # 0.1 second = 100 ms
         last_result = ""
         with sd.InputStream(channels=1, dtype="float32", samplerate=sample_rate) as s:
             event.set()
@@ -297,13 +315,18 @@ class keepMonitor(Thread):
                 event.wait()
                 if(len(last_result)>500):
                     last_result=last_result[10:len(last_result)]
-
+                event.wait()
                 samples, _ = s.read(samples_per_read)  # a blocking read
                 samples = samples.reshape(-1)
+                if not event.is_set():
+                    continue
                 recognizer.accept_waveform(sample_rate, samples)
                 result = recognizer.text
+                if not event.is_set():
+                    continue
                 if last_result != result:
                     last_result = result
+
                     # print("\r{}".format(result), end="", flush=True)
 
 
@@ -313,7 +336,7 @@ class keepReceiveMsg(Thread):
         self.name = name
 
     def run(self):
-        makerobo_setup()
+        # makerobo_setup()
         event.wait()  # wait for the monitor to initialize
         loopNum=0;
         while not exit:
@@ -326,10 +349,12 @@ class keepReceiveMsg(Thread):
             print("receive kazhu difang 2")
             msg = getData()
             print("receive kazhu difang 3")
+            mp3_to_wav("received.mp3")
+            time.sleep(0.1)
             play_wav("received.wav")
             print("sssssssssssssss")
-            loopNum+=1
-            getHumiture(loopNum)
+            # loopNum+=1
+            # getHumiture(loopNum)
 
 # class keepPlayingV(Thread):
 #
@@ -374,7 +399,7 @@ last_result = ""
 # sd.default.device[1] = 4
 
 sock = socket.socket()
-sock.connect(('172.28.165.132', 9008))
+sock.connect(('172.28.167.247', 9009))
 event=threading.Event()
 event.clear()
 tMonitor = keepMonitor("Monitor")
