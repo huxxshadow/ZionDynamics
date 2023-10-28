@@ -44,7 +44,7 @@ speech_config = speechsdk.SpeechConfig(subscription='41772f6a68ad4b6aa64d8a18f2f
 speech_config.speech_synthesis_voice_name = "zh-CN-XiaoxiaoNeural"
 # speech_synthesizer = speechsdk.SpeechSynthesizer(speech_config=speech_config,audio_config=None)
 # speech_config.set_speech_synthesis_output_format(speechsdk.SpeechSynthesisOutputFormat.Riff44100Hz16BitMonoPcm)
-speech_config.set_speech_synthesis_output_format(speechsdk.SpeechSynthesisOutputFormat.Audio16Khz64KBitRateMonoMp3)
+speech_config.set_speech_synthesis_output_format(speechsdk.SpeechSynthesisOutputFormat.Audio48Khz96KBitRateMonoMp3)
 file_config = speechsdk.audio.AudioOutputConfig(filename="temp.mp3")
 
 
@@ -202,7 +202,7 @@ def sendWAV(songPath):
     with open(songPath, "rb") as wavfile:
         input_wav = wavfile.read()
     sock.sendall(int.to_bytes(len(input_wav), 4, byteorder="little"))
-    time.sleep(0.1)
+    time.sleep(0.05)
     sock.sendall(input_wav)
     print(len(input_wav))
     print("send wav file")
@@ -307,7 +307,7 @@ def keepReceiveMsg():
 
 # build connection
 s = socket.socket()
-s.bind(("172.28.167.247", 9009))
+s.bind(("172.28.165.180", 9009))
 # n+1
 s.listen(5)
 # block, build session, sock_clint
