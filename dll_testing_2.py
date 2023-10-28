@@ -4,6 +4,8 @@ import vlc
 # importing time module
 import time
 
+signal = "test3"
+
 # creating Instance class object
 player = vlc.Instance()
 
@@ -14,7 +16,7 @@ media_list = player.media_list_new()
 media_player = player.media_list_player_new()
 
 # creating a new media
-media = player.media_new("C:\\Users\\Hp User\\Desktop\\test3.mp4")
+media = player.media_new("C:\\Users\\Hp User\\Desktop\\" + signal + ".mp4")
 
 # adding media to media list
 media_list.add_media(media)
@@ -24,7 +26,6 @@ media_player.set_media_list(media_list)
 
 # setting loop
 player.vlm_play_media("test3")
-# p = subprocess.Popen('vlc', 'home/pi/demo.mp3', '--loop')
 
 # start playing video
 media_player.play()
