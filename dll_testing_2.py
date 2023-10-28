@@ -4,33 +4,62 @@ import vlc
 # importing time module
 import time
 
-signal = "test3"
+# signal = "test3"
 
-# creating Instance class object
-player = vlc.Instance()
 
-# creating a new media list
-media_list = player.media_list_new()
+instance = vlc.Instance()
 
-# creating a media player object
-media_player = player.media_list_player_new()
+player=instance.media_player_new()
+player.set_fullscreen(True)
 
-# creating a new media
-media = player.media_new("C:\\Users\\Hp User\\Desktop\\" + signal + ".mp4")
+media_list = instance.media_list_new()
 
-# adding media to media list
+player_list = instance.media_list_player_new()
+player_list.set_media_player(player)
+
+media = instance.media_new_path("微笑.mp4")
+
 media_list.add_media(media)
-
-# setting media list to the mediaplayer
-media_player.set_media_list(media_list)
+# vlc.Media.get_duration()
+# vlc.MediaPlayer.get_length()
+# vlc.MediaListPlayer.get_media_player()
+# player_list.set_media_list(media_list)
 
 # setting loop
-player.vlm_play_media("test3")
+# instance.vlm_play_media("test3")
 
 # start playing video
-media_player.play()
+
+
+player_list.set_media_list(media_list)
+print(media_list.count())
+player_list.play()
+vlc.MediaPlayer.audio_set_mute(True)
+print(player_list.get_media_player().get_length())
+media_list.add_media(media)
+
+# player_list.set_media_list(media_list)
+time.sleep(15)
+
+
+
+
+
 
 
 # wait so the video can be played for 5 seconds
 # irrespective for length of video
 time.sleep(4)
+# import vlc
+# import time
+#
+# Instance = vlc.Instance()
+# player = Instance.media_player_new()
+#
+# Media = Instance.media_new('微笑.mp4')
+# player.set_media(Media)
+#
+# player.play()
+# time.sleep(1)
+#
+# player.set_fullscreen(True)

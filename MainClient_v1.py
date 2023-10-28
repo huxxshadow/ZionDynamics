@@ -19,7 +19,8 @@ import threading
 
 from pydub import AudioSegment
 
-# import vlc # pip3 install python-vlc
+import vlc
+
 # import struct
 # import pickle
 # import logging
@@ -29,7 +30,7 @@ global signal
 signal = ""
 
 experissonIdle={"静态1":"./expressions/ ","静态2":" ","静态3":" "}
-experissonIdle={}
+experissonTime={"微笑":4.002,"流汗":1.767,}
 
 
 code_path = os.path.dirname(os.path.abspath(__file__))
@@ -264,7 +265,7 @@ def sendString(msg):
     sock.sendall(bytes(msg, encoding="utf-8"))
 
 def getHumiture(num):
-    if num%10==0:
+    if num%2==0:
         global humidity,temperature,control_1
         humidity, temperature = Adafruit_DHT.read_retry(sensor, makerobo_pin)
         control_1=1
@@ -345,37 +346,42 @@ class keepReceiveMsg(Thread):
             loopNum+=1
             getHumiture(loopNum)
 
-# class keepPlayingV(Thread):
-#
-#
-#     def __init__(self, name):
-#         super().__init__()
-#         self.name = name
-#
-#
-#     def run(self):
-#         while True:
-#         if self.signal == 0:
-#                 self.playRepeatedly()
-#         else:
-#             self.playOnce(self.signal)
-#
-#     def playRepeatedly(self):
-#         while True:
-#             p = vlc.MediaPlayer("test.mp3")#
-#             p.play()
-#
-#     def playOnce(self, signal):
-#         path = self.switch(signal)
-#         p = vlc.MediaPlayer(path)
-#         p.play()
-#
-#     def switch(self, signal):
-#         if signal == 0:
-#             return "" #
-#         elif signal == 1:
-#             return "" #
-#
+class keepPlayingV(Thread):
+
+
+    def __init__(self, name):
+        super().__init__()
+        self.name = name
+
+
+    def run(self):
+        instance = vlc.Instance()
+        player = instance.media_player_new()
+        player.set_fullscreen(True)
+        player.audio_set_mute(True)
+        media_list = instance.media_list_new()
+        player_list = instance.media_list_player_new()
+        player_list.set_media_player(player)
+        bias=0.05
+        media = instance.media_new_path("微笑.mp4")
+        media_list.add_media(media)
+        player_list.set_media_list(media_list)
+        player_list.play()
+        time.sleep(experissonTime["微笑"]-bias)
+        while True:
+            if signal!="":
+                media = instance.media_new_path("流汗"+".mp4")
+                media_list.add_media(media)
+                time.sleep(experissonTime["流汗"]-bias)
+                signal=""
+            else:
+                media = instance.media_new_path("微笑.mp4")
+                media_list.add_media(media)
+                time.sleep(experissonTime["微笑"]-bias)
+
+
+
+
 
 
 
@@ -392,11 +398,13 @@ sock.connect(('172.28.187.75', 9009))
 event=threading.Event()
 event.clear()
 
+tVideo=keepPlayingV("Playing_video")
 tMonitor = keepMonitor("Monitor")
 tRec = keepReceiveMsg("Receive_Msg")
 
 
 # tSend = threading.Thread(target=mainSendMsg(), name="MainSendMsg")
+tVideo.start()
 tRec.start()
 tMonitor.start()
 
