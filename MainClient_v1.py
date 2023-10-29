@@ -32,7 +32,7 @@ skip=False
 signal = ""
 
 # experissonIdle={"静态1":"./expressions/ ","静态2":" ","静态3":" "}
-experissonTime={"微笑":4.002,"流汗":1.767,}
+experissonTime={"微笑":4.002,"流汗":1.767,"哭哭":1.106,"生气":1.875,"眨眼":1.667}
 
 
 code_path = os.path.dirname(os.path.abspath(__file__))
