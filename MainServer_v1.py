@@ -293,7 +293,12 @@ def handleMsg(msg):
             if float(humidity)>80:
                 t1 = time.time()
             if t2-t1>10:
-                out+=f"警告警告,距离上次浇水时间已过去{t2-t1}秒,请及时浇水"
+                timeInSecond = t2 - t1
+                hours = int(timeInSecond / 3600)
+                minutes = int((timeInSecond - hours * 3600) / 60)
+                seconds = int(timeInSecond - hours * 3600 - minutes * 60)
+
+                out+=f"警告警告,距离上次浇水时间已过去{hours}时{minutes}分{seconds}秒,请及时浇水"
     return out
 
 
