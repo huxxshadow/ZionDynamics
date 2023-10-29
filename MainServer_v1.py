@@ -49,7 +49,8 @@ file_config = speechsdk.audio.AudioOutputConfig(filename="temp.mp3")
 
 
 
-api_key = "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"
+# api_key = "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"
+api_key = "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"
 openai.api_key = api_key
 code_path = os.path.dirname(os.path.abspath(__file__))
 mp3_path = os.path.join(code_path, "temp.mp3")
@@ -62,6 +63,9 @@ voiceOutput = []
 STRING_SPECIFIER = "2222"
 WAV_SPECIFIER = "3333"
 exit = False
+global control_2,t1
+control_2=0;
+t1=time.time()
 
 # gpt_role = "As a succulent named JOI, your role is to compassionately assist users in" \
 #            " expressing and addressing their psychological concerns" \
@@ -78,7 +82,7 @@ def askChatGPT(current_question, question_record, response_record):
         for i in range(len(question_record)):  # length of response_record is same as question_record
             list_message.append({"role": "user", "content": question_record[i]})
             list_message.append({"role": "assistant", "content": response_record[i]})
-    list_message.append({"role": "user", "content": current_question})
+    list_message.append({"role": "user", "content": current_question+"根据回答的情感,必须从以下列表里[生气,流汗,哭哭,眨眼,惊讶,微笑]只挑选一个可以概括的内容的字符串在回答末尾用中括号围起来加上"})
     completion = openai.ChatCompletion.create(
         model="gpt-3.5-turbo-0301",
         messages=list_message,
@@ -215,8 +219,8 @@ def sendWAV(songPath):
     # with open(songPath,"rb") as file:
     #     data=file.read()
     # sock.sendall(data)
-    data, samplerate = sf.read(songPath)
-    print(samplerate)
+    # data, samplerate = sf.read(songPath)
+    # print(samplerate)
     # sock.sendall(pickle.dumps(samplerate))
     # time.sleep(1)
     # data_=pickle.dumps(data)
@@ -266,8 +270,10 @@ def handleMsg(msg):
               # for temporary use
             global expSignal
             expSignal=response[len(response)-4:len(response)]
-            out += response[0:len(response)-4]
-
+            if expSignal[0] == "[" and expSignal[3] == "]":
+                out += response[0:len(response)-4]
+            else:
+                out += response
         if inputType =="humidityInput":
             hum=input_content.split(";")
             humidity=hum[0]
@@ -278,8 +284,16 @@ def handleMsg(msg):
                 out+=f"警告警告,湿度已达{humidity},淹死我啦，嘟嘟鲁。"
 
 
-
-
+            if (float(temperature)>28):
+                out+=f"警告警告,温度已达{temperature},请调整至合适温度"
+            global t1
+            t2 = time.time()
+            print(t2)
+            print(t1)
+            if float(humidity)>80:
+                t1 = time.time()
+            if t2-t1>10:
+                out+=f"警告警告,距离上次浇水时间已过去{t2-t1}秒,请及时浇水"
     return out
 
 
@@ -307,7 +321,7 @@ def keepReceiveMsg():
 
 # build connection
 s = socket.socket()
-s.bind(("172.28.165.180", 9009))
+s.bind(("172.28.187.159", 9009))
 # n+1
 s.listen(5)
 # block, build session, sock_clint

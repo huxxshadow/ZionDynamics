@@ -27,9 +27,11 @@ import vlc
 # import base64
 # from config_ import record_filler_len, data_package_size
 global signal
+global skip
+skip=False
 signal = ""
 
-experissonIdle={"静态1":"./expressions/ ","静态2":" ","静态3":" "}
+# experissonIdle={"静态1":"./expressions/ ","静态2":" ","静态3":" "}
 experissonTime={"微笑":4.002,"流汗":1.767,}
 
 
@@ -144,6 +146,9 @@ def receiveLongMsg():
     # sock.settimeout(5)
     while totallen!=0:
         # try:
+            if totallen<0:
+                totalData=bytes()
+                break
             data = sock.recv(1024)
             # print(len(data))
             totallen-=len(data)
@@ -178,7 +183,10 @@ def getData():
     global signal
     temp=receiveShortMsg(6).decode(encoding="utf-8")
     if temp!="nu":
-        signal=temp
+        if temp in experissonTime.keys():
+            signal=temp
+        else:
+            signal=""
     print(signal)
     # specifier = str(receiveMsg(), encoding="utf-8")
     # print("receive the specifier: " + specifier)
@@ -205,6 +213,10 @@ def getData():
 
     with open('received.mp3', 'wb') as file:
         data = receiveLongMsg()
+        if len(data)==0:
+            global skip
+            skip=True;
+            return
         file.write(data)
         print("This is the write wav stage.")
             # print(data)
@@ -242,7 +254,7 @@ def processMsg():
     event.clear()
     if len(last_result)-length_last<6:
         event.set()
-        time.sleep(1)
+        time.sleep(2)
         return "voiceInput:"
 
     temp = last_result[length_last:len(last_result)]
@@ -324,6 +336,7 @@ class keepReceiveMsg(Thread):
         self.name = name
 
     def run(self):
+        global skip
         makerobo_setup()
         event.wait()  # wait for the monitor to initialize
         loopNum=0;
@@ -338,6 +351,10 @@ class keepReceiveMsg(Thread):
             print("receive kazhu difang 2")
 
             msg = getData()
+            if skip:
+                print("网络出错了")
+                skip=False
+                continue
             print("receive kazhu difang 3")
             mp3_to_wav("received.mp3")
             # time.sleep(0.1)
@@ -355,14 +372,16 @@ class keepPlayingV(Thread):
 
 
     def run(self):
+        global signal
         instance = vlc.Instance()
         player = instance.media_player_new()
         player.set_fullscreen(True)
         player.audio_set_mute(True)
+        player.set_scale(0.85)
         media_list = instance.media_list_new()
         player_list = instance.media_list_player_new()
         player_list.set_media_player(player)
-        bias=0.05
+        bias=0.02
         media = instance.media_new_path("微笑.mp4")
         media_list.add_media(media)
         player_list.set_media_list(media_list)
@@ -370,9 +389,9 @@ class keepPlayingV(Thread):
         time.sleep(experissonTime["微笑"]-bias)
         while True:
             if signal!="":
-                media = instance.media_new_path("流汗"+".mp4")
+                media = instance.media_new_path(signal+".mp4")
                 media_list.add_media(media)
-                time.sleep(experissonTime["流汗"]-bias)
+                time.sleep(experissonTime[signal]-bias)
                 signal=""
             else:
                 media = instance.media_new_path("微笑.mp4")

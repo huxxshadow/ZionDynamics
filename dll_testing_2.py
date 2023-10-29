@@ -11,7 +11,7 @@ instance = vlc.Instance()
 
 player=instance.media_player_new()
 player.set_fullscreen(True)
-
+player.video_set_scale(1)
 media_list = instance.media_list_new()
 
 player_list = instance.media_list_player_new()
@@ -34,12 +34,12 @@ media_list.add_media(media)
 player_list.set_media_list(media_list)
 print(media_list.count())
 player_list.play()
-vlc.MediaPlayer.audio_set_mute(True)
-print(player_list.get_media_player().get_length())
-media_list.add_media(media)
+time.sleep(8)
+
+media_list.add_media(instance.media_new_path("流汗.mp4"))
 
 # player_list.set_media_list(media_list)
-time.sleep(15)
+time.sleep(8)
 
 
 
