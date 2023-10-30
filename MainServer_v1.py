@@ -326,7 +326,7 @@ def keepReceiveMsg():
 
 # build connection
 s = socket.socket()
-s.bind(("172.28.187.159", 9009))
+s.bind(("172.28.171.187", 9009))
 # n+1
 s.listen(5)
 # block, build session, sock_clint

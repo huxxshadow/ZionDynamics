@@ -377,7 +377,7 @@ class keepPlayingV(Thread):
         player = instance.media_player_new()
         player.set_fullscreen(True)
         player.audio_set_mute(True)
-        player.set_scale(0.85)
+        player.video_set_scale(0.85)
         media_list = instance.media_list_new()
         player_list = instance.media_list_player_new()
         player_list.set_media_player(player)
