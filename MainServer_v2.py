@@ -278,10 +278,11 @@ def handleMsg(msg):
             hum=input_content.split(";")
             humidity=hum[0]
             temperature=hum[1]
-            if (float(temperature)>18):
-                out+=f"警告警告,温度已达{temperature},烧死我啦，嘟嘟鲁。"
-            if (float(humidity)>30):
-                out+=f"警告警告,湿度已达{humidity},淹死我啦，嘟嘟鲁。"
+
+            # if (float(temperature)>18):
+            #     out+=f"警告警告,温度已达{temperature},烧死我啦，嘟嘟鲁。"
+            # if (float(humidity)>30):
+            #     out+=f"警告警告,湿度已达{humidity},淹死我啦，嘟嘟鲁。"
 
 
             if (float(temperature)>28):
@@ -297,8 +298,10 @@ def handleMsg(msg):
                 hours = int(timeInSecond / 3600)
                 minutes = int((timeInSecond - hours * 3600) / 60)
                 seconds = int(timeInSecond - hours * 3600 - minutes * 60)
-
-                out+=f"警告警告,距离上次浇水时间已过去{hours}时{minutes}分{seconds}秒,请及时浇水"
+                if hours==0:
+                    out+=f"警告警告,距离上次浇水时间已过去{minutes}分{seconds}秒,请及时浇水"
+                elif minutes==0:
+                    out+=f"警告警告,距离上次浇水时间已过去{seconds}秒,请及时浇水"
     return out
 
 
