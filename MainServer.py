@@ -10,7 +10,7 @@ import time
 import pygame
 from gtts import gTTS
 
-api_key = "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"
+api_key = None
 openai.api_key = api_key
 code_path = os.path.dirname(os.path.abspath(__file__))
 mp3_path = os.path.join(code_path, "mp3.mp3")

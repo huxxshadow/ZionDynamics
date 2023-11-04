@@ -27,7 +27,7 @@ import soundfile as sf
 
 import azure.cognitiveservices.speech as speechsdk
 
-azure_key = '41772f6a68ad4b6aa64d8a18f2f8a150'
+azure_key = None
 region = 'eastus'
 subscription_key = azure_key
 
@@ -38,7 +38,7 @@ subscription_key = azure_key
 # logger = logging.getLogger("服务器")
 
 # This example requires environment variables named "SPEECH_KEY" and "SPEECH_REGION"
-speech_config = speechsdk.SpeechConfig(subscription='41772f6a68ad4b6aa64d8a18f2f8a150', region='eastus')
+speech_config = speechsdk.SpeechConfig(subscription=None, region='eastus')
 
 # The language of the voice that speaks.
 speech_config.speech_synthesis_voice_name = "zh-CN-XiaoxiaoNeural"
@@ -50,7 +50,8 @@ file_config = speechsdk.audio.AudioOutputConfig(filename="temp.mp3")
 
 
 # api_key = "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"
-api_key = "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"
+# api_key = "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"
+api_key = None
 openai.api_key = api_key
 code_path = os.path.dirname(os.path.abspath(__file__))
 mp3_path = os.path.join(code_path, "temp.mp3")
