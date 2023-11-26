@@ -6,8 +6,11 @@ import time
 import pygame
 from gtts import gTTS
 
-api_key = "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"
-openai.api_key = api_key
+api_key = ""
+# openai.api_key = api_key
+client=openai.OpenAI(
+    api_key=api_key,
+)
 code_path = os.path.dirname(os.path.abspath(__file__))
 mp3_path = os.path.join(code_path, "mp3.wav")
 
@@ -55,12 +58,13 @@ gpt_role = "As a succulent named JOI, your role is to compassionately assist use
 while True:
     my_question = input("You：")
 
-    completion = openai.ChatCompletion.create(
-        model="gpt-3.5-turbo-0301",
+    completion = client.chat.completions.create(
+
         messages=[
             {"role": "system", "content": gpt_role},
             {"role": "user", "content": my_question}
-        ]
+        ],
+        model = "gpt-3.5-turbo-0301",
     )
 
     answer = completion.choices[0].message["content"].strip()

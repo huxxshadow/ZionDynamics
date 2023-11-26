@@ -5,7 +5,7 @@ import os
 import azure.cognitiveservices.speech as speechsdk
 import wave
 
-api_key = "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"
+api_key = "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"
 openai.api_key = api_key
 
 azure_key = '41772f6a68ad4b6aa64d8a18f2f8a150'
@@ -46,8 +46,8 @@ while True:
     completion = openai.ChatCompletion.create(
         model="gpt-3.5-turbo-0301",
         messages=[
-            {"role": "system", "content": gpt_role},
-            {"role": "user", "content": my_question}
+            {"role": "system", "content": "gpt_role"},
+            {"role": "user", "content": "my_question"}
         ]
     )
 

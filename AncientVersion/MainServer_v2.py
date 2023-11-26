@@ -49,7 +49,7 @@ file_config = speechsdk.audio.AudioOutputConfig(filename="temp.mp3")
 
 
 
-# api_key = "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"
+# api_key =
 api_key = None
 openai.api_key = api_key
 code_path = os.path.dirname(os.path.abspath(__file__))
@@ -240,7 +240,7 @@ def sendWAV(songPath):
     # time.sleep(1)
     # sock.sendall(file.readframes(file.getnframes()))
     # time.sleep(1)
-
+    #
     # sock.sendall(bytes(str(file.getnchannels()), encoding="utf-8"))
     # sock.sendall(bytes(str(file.getsampwidth()), encoding="utf-8"))
     # sock.sendall(int.to_bytes(file.getnchannels()))
