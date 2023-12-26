@@ -1,0 +1,12 @@
+openai == 1.6.1
+re
+os
+time
+sherpa_ncnn
+threading
+pyhub
+vlc
+traceback
+soundfile
+socket
+azure-cognitiveservices-speech
